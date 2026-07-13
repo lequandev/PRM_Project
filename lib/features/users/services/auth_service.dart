@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // <-- THÊM MỚI
 import '../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Key dùng để lưu trữ dưới Local Storage
+  static const String _userIdKey = "cached_user_id";
 
   // 1. REGISTER
   Future<UserModel?> registerWithEmailAndPassword({
@@ -15,7 +19,6 @@ class AuthService {
     DateTime? birthday,
   }) async {
     try {
-      // Step 1: Create a user in Firebase Authentication
       UserCredential result = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -24,7 +27,6 @@ class AuthService {
       User? firebaseUser = result.user;
 
       if (firebaseUser != null) {
-        // Step 2: Create a UserModel object
         UserModel newUser = UserModel(
           id: firebaseUser.uid,
           fullname: fullname,
@@ -37,11 +39,14 @@ class AuthService {
           role: UserRole.CUSTOMER,
         );
 
-        // Step 3: Save user information to Firestore
         await _firestore
             .collection('users')
             .doc(firebaseUser.uid)
             .set(newUser.toMap());
+
+        // Caching Session local
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_userIdKey, firebaseUser.uid);
 
         return newUser;
       }
@@ -61,7 +66,6 @@ class AuthService {
     required String password,
   }) async {
     try {
-      // Step 1: Authenticate with Firebase Authentication
       UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -70,13 +74,16 @@ class AuthService {
       User? firebaseUser = result.user;
 
       if (firebaseUser != null) {
-        // Step 2: Retrieve user information from Firestore
         DocumentSnapshot doc = await _firestore
             .collection('users')
             .doc(firebaseUser.uid)
             .get();
 
         if (doc.exists && doc.data() != null) {
+          // Caching Session local khi login thành công
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_userIdKey, firebaseUser.uid);
+
           return UserModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
         }
       }
@@ -92,6 +99,21 @@ class AuthService {
 
   // 3. LOGOUT
   Future<void> signOut() async {
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+
+      // Xóa sạch session dưới local storage khi thoát ứng dụng
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_userIdKey);
+    } catch (e) {
+      print("Error during sign out: $e");
+      rethrow;
+    }
+  }
+
+  // 4. CHECK PERSISTED SESSION (Hàm bổ trợ kiểm tra trạng thái login cũ)
+  Future<String?> getSavedUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userIdKey);
   }
 }
