@@ -23,7 +23,7 @@ dependencies:
   firebase_storage: ^12.0.0
 
   # Thư viện bổ trợ chọn ảnh từ bộ nhớ máy để up lên Storage
-  image_picker: ^1.0.7
+  image_picker: ^1.2.3
 
   cupertino_icons: ^1.0.6
   device_preview: ^1.3.1
