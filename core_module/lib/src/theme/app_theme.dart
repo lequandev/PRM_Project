@@ -4,6 +4,7 @@ import 'app_typography.dart';
 import 'app_spacing.dart';
 
 /// AppTheme — ThemeData chính thức cho Coffee Shop.
+/// Dùng brand palette: Gold #D4A017, Brown #5A3E2B, Beige #F8F3EA
 /// Dev 2, 3, 4, 5: dùng `Theme.of(context)` — không hardcode màu.
 /// Dev 1 owns — không tự sửa ngoài core_module.
 abstract class AppTheme {
@@ -17,39 +18,40 @@ abstract class AppTheme {
 
         // Color Scheme
         colorScheme: const ColorScheme.light(
-          primary: AppColors.primary,
-          onPrimary: AppColors.textOnPrimary,
-          primaryContainer: AppColors.primaryLight,
-          secondary: AppColors.accent,
+          primary: AppColors.goldPrimary,
+          onPrimary: AppColors.textOnGold,
+          primaryContainer: AppColors.goldLight,
+          secondary: AppColors.brownAccent,
           onSecondary: AppColors.white,
-          surface: AppColors.surface,
+          surface: AppColors.cardBackground,
           onSurface: AppColors.textPrimary,
           error: AppColors.error,
           onError: AppColors.white,
         ),
 
         // Scaffold
-        scaffoldBackgroundColor: AppColors.background,
+        scaffoldBackgroundColor: AppColors.backgroundLight,
 
-        // AppBar
+        // AppBar — Beige ấm theo brand
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.white,
+          backgroundColor: AppColors.beigeWarm,
+          foregroundColor: AppColors.brownAccent,
           elevation: 0,
           centerTitle: true,
           titleTextStyle: TextStyle(
             fontFamily: 'Inter',
             fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppColors.white,
+            fontWeight: FontWeight.w700,
+            color: AppColors.brownAccent,
           ),
+          iconTheme: IconThemeData(color: AppColors.brownAccent),
         ),
 
-        // ElevatedButton
+        // ElevatedButton — Gold Primary
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.white,
+            backgroundColor: AppColors.goldPrimary,
+            foregroundColor: AppColors.textOnGold,
             textStyle: AppTypography.button,
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
@@ -62,12 +64,12 @@ abstract class AppTheme {
           ),
         ),
 
-        // OutlinedButton
+        // OutlinedButton — Gold border
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
+            foregroundColor: AppColors.goldPrimary,
             textStyle: AppTypography.button,
-            side: const BorderSide(color: AppColors.primary, width: 1.5),
+            side: const BorderSide(color: AppColors.goldPrimary, width: 1.5),
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
@@ -81,7 +83,7 @@ abstract class AppTheme {
         // TextButton
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
+            foregroundColor: AppColors.goldPrimary,
             textStyle: AppTypography.button,
           ),
         ),
@@ -89,102 +91,135 @@ abstract class AppTheme {
         // InputDecoration (TextField)
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: AppColors.grey50,
+          fillColor: AppColors.backgroundAlt,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm + 4,
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.grey300),
+            borderSide: const BorderSide(color: AppColors.borderLight),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.grey300),
+            borderSide: const BorderSide(color: AppColors.borderLight),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            borderSide:
+                const BorderSide(color: AppColors.goldPrimary, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
             borderSide: const BorderSide(color: AppColors.error),
           ),
-          hintStyle: AppTypography.bodyMedium
-              .copyWith(color: AppColors.textDisabled),
+          hintStyle:
+              AppTypography.bodyMedium.copyWith(color: AppColors.textHint),
           labelStyle: AppTypography.bodyMedium
               .copyWith(color: AppColors.textSecondary),
         ),
 
-        // Card
+        // Card — trắng tinh, viền nhẹ
         cardTheme: CardThemeData(
           elevation: 0,
-          color: AppColors.surface,
+          color: AppColors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.card),
-            side: const BorderSide(color: AppColors.grey200),
+            side: const BorderSide(color: AppColors.borderLight),
           ),
           margin: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
         ),
 
-        // BottomNavigationBar
+        // BottomNavigationBar — Gold active
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: AppColors.surface,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.grey400,
+          backgroundColor: AppColors.cardBackground,
+          selectedItemColor: AppColors.goldPrimary,
+          unselectedItemColor: AppColors.textHint,
           type: BottomNavigationBarType.fixed,
           elevation: 8,
         ),
 
-        // Chip
+        // Chip — Beige background
         chipTheme: ChipThemeData(
-          backgroundColor: AppColors.grey100,
-          selectedColor: AppColors.primaryLight,
+          backgroundColor: AppColors.beigeLight,
+          selectedColor: AppColors.goldLight,
           labelStyle: AppTypography.label,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
         ),
 
-        // Divider
+        // Divider — border nhẹ
         dividerTheme: const DividerThemeData(
-          color: AppColors.grey200,
+          color: AppColors.borderLight,
           thickness: 1,
           space: 0,
         ),
 
-        // Text
-        textTheme: const TextTheme(
-          displayLarge: AppTypography.displayLarge,
-          displayMedium: AppTypography.displayMedium,
-          headlineLarge: AppTypography.h1,
-          headlineMedium: AppTypography.h2,
-          headlineSmall: AppTypography.h3,
-          titleLarge: AppTypography.h4,
-          bodyLarge: AppTypography.bodyLarge,
-          bodyMedium: AppTypography.bodyMedium,
-          bodySmall: AppTypography.bodySmall,
-          labelLarge: AppTypography.button,
-          labelSmall: AppTypography.caption,
+        // Text theme
+        textTheme: TextTheme(
+          displayLarge: AppTypography.displayLarge
+              .copyWith(color: AppColors.textPrimary),
+          displayMedium: AppTypography.displayMedium
+              .copyWith(color: AppColors.textPrimary),
+          headlineLarge:
+              AppTypography.h1.copyWith(color: AppColors.textPrimary),
+          headlineMedium:
+              AppTypography.h2.copyWith(color: AppColors.textPrimary),
+          headlineSmall:
+              AppTypography.h3.copyWith(color: AppColors.textPrimary),
+          titleLarge:
+              AppTypography.h4.copyWith(color: AppColors.textPrimary),
+          bodyLarge:
+              AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+          bodyMedium: AppTypography.bodyMedium
+              .copyWith(color: AppColors.textSecondary),
+          bodySmall:
+              AppTypography.bodySmall.copyWith(color: AppColors.textHint),
+          labelLarge: AppTypography.button.copyWith(color: AppColors.textPrimary),
+          labelSmall:
+              AppTypography.caption.copyWith(color: AppColors.textHint),
         ),
       );
 
   // ─────────────────────────────────────────────
-  // Admin Theme (darker, more professional)
+  // Admin Theme (Brown header, darker)
   // ─────────────────────────────────────────────
   static ThemeData get admin => light.copyWith(
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primaryDark,
+          backgroundColor: AppColors.brownAccent,
           foregroundColor: AppColors.white,
           elevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
             fontFamily: 'Inter',
             fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.white,
+          ),
+          iconTheme: IconThemeData(color: AppColors.white),
+        ),
+      );
+
+  // ─────────────────────────────────────────────
+  // Staff Theme (similar to light, slightly darker AppBar)
+  // ─────────────────────────────────────────────
+  static ThemeData get staff => light.copyWith(
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.brownAccent,
+          foregroundColor: AppColors.white,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.white,
           ),
+          iconTheme: IconThemeData(color: AppColors.white),
         ),
       );
 }
