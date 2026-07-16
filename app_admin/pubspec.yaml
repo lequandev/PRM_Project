@@ -1,0 +1,37 @@
+name: app_admin
+description: "Coffee Shop — Admin App/Web (Dashboard, Menu CRUD, Reports, Marketing). Dev 5."
+version: 1.0.0+1
+publish_to: "none"
+
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Core module (Dev 1 owns — do NOT modify)
+  coffee_shop_core:
+    path: ../core_module
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # State management
+  provider: ^6.1.0
+
+  # Firebase (initialized via core_module)
+  firebase_core: ^3.0.0
+
+  # Web/Desktop charting for analytics (Dev 5 - UC-37, UC-38)
+  fl_chart: ^0.69.0
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
