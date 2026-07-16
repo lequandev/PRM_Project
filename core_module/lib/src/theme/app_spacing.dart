@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// AppSpacing — Khoảng cách nhất quán toàn dự án.
 /// Dev 1 owns — dùng constants này thay vì hardcode số.
 abstract class AppSpacing {
@@ -22,8 +24,6 @@ abstract class AppRadius {
 }
 
 /// AppShadow — Box shadows nhất quán.
-import 'package:flutter/material.dart';
-
 abstract class AppShadow {
   static const List<BoxShadow> sm = [
     BoxShadow(

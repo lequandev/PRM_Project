@@ -10,6 +10,9 @@ part 'order_model.g.dart';
 /// Dev 1 owns — không tự sửa ngoài core_module.
 @freezed
 class OrderModel with _$OrderModel {
+  // Required by freezed for custom getters/methods
+  const OrderModel._();
+
   const factory OrderModel({
     required String id,
     required String customerId,
@@ -93,6 +96,10 @@ class OrderModel with _$OrderModel {
     };
   }
 
-  /// Helper — Trả về OrderStatus enum từ status string
+}
+
+/// Extension helper cho OrderModel
+extension OrderModelX on OrderModel {
+  /// Trả về OrderStatus enum từ status string
   OrderStatus get orderStatus => OrderStatus.fromString(status);
 }
