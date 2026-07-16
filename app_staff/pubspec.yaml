@@ -1,0 +1,34 @@
+name: app_staff
+description: "Coffee Shop — Staff App (Order Queue, Status Updates, Inventory). Dev 4."
+version: 1.0.0+1
+publish_to: "none"
+
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Core module (Dev 1 owns — do NOT modify)
+  coffee_shop_core:
+    path: ../core_module
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # State management
+  provider: ^6.1.0
+
+  # Firebase (initialized via core_module)
+  firebase_core: ^3.0.0
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,3 +1,7 @@
+# =============================================
+# Coffee Shop Flutter Project — .gitignore
+# =============================================
+
 # Miscellaneous
 *.class
 *.log
@@ -12,34 +16,59 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# IDE
+.idea/
 *.iml
 *.ipr
 *.iws
-.idea/
+.vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# Flutter / Dart / Pub
 **/doc/api/
 **/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/build/
 /coverage/
 
-# Symbolication related
-app.*.symbols
+# Dart code generation (freezed, json_serializable)
+# Generated files SHOULD be committed so teammates don't need to run build_runner
+# Uncomment lines below ONLY if you decide NOT to commit generated files:
+# **/*.freezed.dart
+# **/*.g.dart
 
-# Obfuscation related
+# Symbolication / Obfuscation
+app.*.symbols
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# Android build artifacts
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase — NEVER commit real credentials
+# google-services.json and GoogleService-Info.plist contain API keys
+# Use CI/CD secrets or separate config files per environment
+google-services.json
+GoogleService-Info.plist
+**/firebase_options.dart
+lib/config/firebase_config.dart
+
+# Environment / secrets
+.env
+.env.*
+**/*.secret
+**/secrets/
+
+# Multi-package build outputs
+core_module/build/
+app_customer/build/
+app_staff/build/
+app_admin/build/
+core_module/.dart_tool/
+app_customer/.dart_tool/
+app_staff/.dart_tool/
+app_admin/.dart_tool/
