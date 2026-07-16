@@ -9,6 +9,8 @@ part 'voucher_model.g.dart';
 /// Dev 1 owns — không tự sửa ngoài core_module.
 @freezed
 class VoucherModel with _$VoucherModel {
+  const VoucherModel._();
+
   const factory VoucherModel({
     required String code,
     required String description,
