@@ -1,5 +1,5 @@
-name: badminton_management_app
-description: "A Product Management and Shopping Cart App for Badminton Racquets with Full Firebase Integration."
+name: coffee_shop_monorepo
+description: "Coffee Shop Flutter Monorepo — Git container for core_module, app_customer, app_staff, app_admin. Do NOT run this root project directly."
 publish_to: "none"
 version: 1.0.0+1
 
