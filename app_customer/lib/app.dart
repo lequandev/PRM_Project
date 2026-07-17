@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 
 import 'providers/auth_provider.dart';
+import 'features/menu/providers/menu_provider.dart';
+import 'features/cart/providers/cart_provider.dart';
 import 'routes/app_router.dart';
 
 class App extends StatelessWidget {
@@ -13,6 +15,8 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MenuProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
