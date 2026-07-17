@@ -73,48 +73,66 @@ class CartScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final item = cartProvider.items[index];
                     return Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                           child: item.productImageUrl != null && item.productImageUrl!.isNotEmpty
                               ? Image.network(
                                   item.productImageUrl!,
-                                  width: 60,
-                                  height: 60,
+                                  width: 76,
+                                  height: 76,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => Container(
-                                    width: 60,
-                                    height: 60,
+                                    width: 76,
+                                    height: 76,
                                     color: AppColors.beigeWarm,
-                                    child: const Icon(Icons.coffee, color: AppColors.goldPrimary),
+                                    child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
                                   ),
                                 )
                               : Container(
-                                  width: 60,
-                                  height: 60,
+                                  width: 76,
+                                  height: 76,
                                   color: AppColors.beigeWarm,
-                                  child: const Icon(Icons.coffee, color: AppColors.goldPrimary),
+                                  child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
                                 ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 item.productName,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, height: 1.3),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                formatCurrency.format(item.unitPrice),
-                                style: const TextStyle(color: AppColors.goldPrimary, fontWeight: FontWeight.bold),
+                              if (item.customizations.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  item.customizations.entries
+                                      .map((e) => '${_translateCustomizationType(e.key)}: ${_translateCustomizationValue(e.value)}')
+                                      .join(' • '),
+                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+                                ),
+                              ],
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: Text(
+                                      formatCurrency.format(item.unitPrice),
+                                      style: const TextStyle(color: AppColors.goldPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                                    ),
+                                  ),
+                                  _buildQuantityController(context, cartProvider, index, item),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                        _buildQuantityController(context, cartProvider, index, item),
                       ],
                     );
                   },
@@ -174,9 +192,12 @@ class CartScreen extends StatelessWidget {
 
   Widget _buildQuantityController(BuildContext context, CartProvider provider, int index, OrderItemModel item) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(Icons.remove_circle_outline, color: AppColors.goldPrimary),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: const Icon(Icons.remove_circle_outline, color: AppColors.goldPrimary, size: 22),
           onPressed: () {
             if (item.quantity > 1) {
               provider.updateQuantity(index, item.quantity - 1);
@@ -186,21 +207,26 @@ class CartScreen extends StatelessWidget {
           },
         ),
         SizedBox(
-          width: 24,
+          width: 28,
           child: Text(
             '${item.quantity}',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.add_circle_outline, color: AppColors.goldPrimary),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: const Icon(Icons.add_circle_outline, color: AppColors.goldPrimary, size: 22),
           onPressed: () {
             provider.updateQuantity(index, item.quantity + 1);
           },
         ),
+        const SizedBox(width: 12),
         IconButton(
-          icon: const Icon(Icons.delete_outline, color: AppColors.textHint),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: const Icon(Icons.delete_outline, color: AppColors.textHint, size: 22),
           onPressed: () {
             _showDeleteConfirmDialog(context, provider, index);
           },
@@ -231,5 +257,37 @@ class CartScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _translateCustomizationType(String type) {
+    switch (type.toLowerCase()) {
+      case 'size':
+        return 'Size';
+      case 'ice':
+        return 'Đá';
+      case 'sugar':
+        return 'Đường';
+      case 'milk':
+        return 'Sữa';
+      default:
+        // Capitalize first letter as fallback
+        if (type.isEmpty) return type;
+        return type[0].toUpperCase() + type.substring(1);
+    }
+  }
+
+  String _translateCustomizationValue(String value) {
+    switch (value.toLowerCase()) {
+      case 'none':
+        return 'Không';
+      case 'less':
+        return 'Ít';
+      case 'normal':
+        return 'Bình thường';
+      case 'extra':
+        return 'Nhiều';
+      default:
+        return value;
+    }
   }
 }

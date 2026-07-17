@@ -8,15 +8,26 @@ class CartProvider with ChangeNotifier {
   double get totalAmount => _items.fold(0, (sum, item) => sum + item.totalPrice);
   int get totalQuantity => _items.fold(0, (sum, item) => sum + item.quantity);
 
-  void addItem(ProductModel product, List<CustomizationModel> customizations, int quantity) {
-    final existingIndex = _items.indexWhere((item) => item.productId == product.id);
+  void addItem(ProductModel product, Map<String, String> selectedCustomizations, double extraPrice, int quantity) {
+    // Tìm kiếm xem đã có món này với CÙNG tùy chọn chưa
+    final existingIndex = _items.indexWhere((item) {
+      if (item.productId != product.id) return false;
+      if (item.customizations.length != selectedCustomizations.length) return false;
+      bool same = true;
+      selectedCustomizations.forEach((key, value) {
+        if (item.customizations[key] != value) same = false;
+      });
+      return same;
+    });
+
+    final unitPrice = product.basePrice + extraPrice;
 
     if (existingIndex >= 0) {
-      // Nếu sản phẩm đã có trong giỏ hàng, chỉ tăng số lượng
+      // Nếu sản phẩm đã có trong giỏ hàng (cùng tùy chọn), chỉ tăng số lượng
       final existingItem = _items[existingIndex];
       _items[existingIndex] = existingItem.copyWith(
         quantity: existingItem.quantity + quantity,
-        totalPrice: existingItem.unitPrice * (existingItem.quantity + quantity),
+        totalPrice: unitPrice * (existingItem.quantity + quantity),
       );
     } else {
       // Thêm mới nếu chưa có
@@ -25,9 +36,9 @@ class CartProvider with ChangeNotifier {
         productName: product.name,
         productImageUrl: product.imageUrl,
         quantity: quantity,
-        unitPrice: product.basePrice,
-        totalPrice: product.basePrice * quantity,
-        customizations: {}, // Tạm thời rỗng, cần map CustomizationModel
+        unitPrice: unitPrice,
+        totalPrice: unitPrice * quantity,
+        customizations: selectedCustomizations,
         note: '',
       );
       _items.add(newItem);

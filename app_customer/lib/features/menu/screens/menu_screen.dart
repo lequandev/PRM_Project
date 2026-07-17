@@ -6,6 +6,7 @@ import '../providers/menu_provider.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../widgets/category_filter_bar.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_detail_bottom_sheet.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -65,6 +66,35 @@ class MenuScreen extends StatelessWidget {
                 ),
               ),
               
+              // Search Bar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    onChanged: menuProvider.setSearchQuery,
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm đồ uống...',
+                      prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
+                      filled: true,
+                      fillColor: AppColors.white,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.borderLight),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.goldPrimary),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
               // Category Filter Bar
               SliverToBoxAdapter(
                 child: Padding(
@@ -97,12 +127,16 @@ class MenuScreen extends StatelessWidget {
                             return ProductCard(
                               product: product,
                               onTap: () {
-                                // TODO: Navigate to detail / show bottom sheet
+                                ProductDetailBottomSheet.show(context, product);
                               },
                               onAddTap: () {
+                                if (product.customizations.isNotEmpty) {
+                                  ProductDetailBottomSheet.show(context, product);
+                                  return;
+                                }
                                 final cartProvider = Provider.of<CartProvider>(context, listen: false);
-                                // Truyền rỗng list customizations và mặc định thêm 1 ly
-                                cartProvider.addItem(product, [], 1);
+                                // Quick add for no-customization products
+                                cartProvider.addItem(product, {}, 0, 1);
                                 ScaffoldMessenger.of(context).clearSnackBars();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
