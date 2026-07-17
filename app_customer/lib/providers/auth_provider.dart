@@ -8,6 +8,9 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isInitializing = true;
+  bool get isInitializing => _isInitializing;
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
@@ -15,10 +18,14 @@ class AuthProvider extends ChangeNotifier {
   UserModel? get currentUser => _currentUser;
 
   AuthProvider() {
-    _authService.authStateChanges.listen((User? user) {
-      // Firebase auth state changed. 
-      // If we need to fetch UserModel whenever user changes, we could do it here.
-      // But for login/register, we will manually set _currentUser.
+    _authService.authStateChanges.listen((User? user) async {
+      if (user == null) {
+        _currentUser = null;
+      } else {
+        _currentUser = await _authService.getCurrentUserModel();
+      }
+      _isInitializing = false;
+      notifyListeners();
     });
   }
 

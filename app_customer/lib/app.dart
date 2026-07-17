@@ -14,11 +14,25 @@ class App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
-      child: MaterialApp.router(
-        title: 'Coffee Shop Customer',
-        theme: AppTheme.light,
-        routerConfig: appRouter,
-        debugShowCheckedModeBanner: false,
+      child: Consumer<AuthProvider>(
+        builder: (context, authProvider, child) {
+          if (authProvider.isInitializing) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light,
+              home: const Scaffold(
+                body: Center(child: CircularProgressIndicator(color: AppColors.goldPrimary)),
+              ),
+            );
+          }
+
+          return MaterialApp.router(
+            title: 'Coffee Shop Customer',
+            theme: AppTheme.light,
+            routerConfig: createAppRouter(authProvider),
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
     );
   }

@@ -15,6 +15,16 @@ class AuthService {
   /// Lấy user hiện tại (null nếu chưa đăng nhập)
   User? get currentUser => _auth.currentUser;
 
+  /// Lấy UserModel từ Firestore của user đang đăng nhập (UC-02 Auto Login)
+  Future<UserModel?> getCurrentUserModel() async {
+    if (currentUser == null) return null;
+    try {
+      return await _fetchUserModel(currentUser!.uid);
+    } catch (_) {
+      return null;
+    }
+  }
+
   // ─────────────────────────────────────────────
   // UC-01: Đăng ký tài khoản mới
   // ─────────────────────────────────────────────
