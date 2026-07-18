@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/profile_repository.dart';
+import '../../../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 
 /// ProfileScreen — UC-04 (hồ sơ), điều hướng UC-05/03/27, UC-06 (xóa tài khoản).
@@ -82,6 +83,28 @@ class _ProfileContent extends StatelessWidget {
               icon: Icons.lock_reset_rounded,
               title: 'Đặt lại mật khẩu',
               onTap: () => context.push('/profile/reset-password'),
+            ),
+            _MenuTile(
+              icon: Icons.logout_rounded,
+              title: 'Đăng xuất',
+              onTap: () {
+                // AuthProvider chỉ tồn tại khi Firebase sẵn sàng (xem app.dart)
+                AuthProvider? auth;
+                try {
+                  auth = context.read<AuthProvider>();
+                } on ProviderNotFoundException {
+                  auth = null;
+                }
+                if (auth == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Demo mode — chưa đăng nhập Firebase.'),
+                    ),
+                  );
+                } else {
+                  auth.logout();
+                }
+              },
             ),
           ],
         ),

@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/checkout_repository.dart';
-import '../../../data/fake_cart_provider.dart';
 import '../../../data/profile_repository.dart';
+import '../../cart/providers/cart_provider.dart';
 import '../providers/checkout_provider.dart';
 import '../widgets/address_section.dart';
 import '../widgets/cart_items_section.dart';
@@ -24,7 +24,7 @@ class CheckoutScreen extends StatelessWidget {
       create: (context) => CheckoutProvider(
         checkoutRepository: context.read<CheckoutRepository>(),
         profileRepository: context.read<ProfileRepository>(),
-        cart: context.read<FakeCartProvider>(),
+        cart: context.read<CartProvider>(),
       ),
       child: const _CheckoutView(),
     );

@@ -3,13 +3,13 @@ import 'package:flutter/foundation.dart';
 
 import '../../../data/app_session.dart';
 import '../../../data/checkout_repository.dart';
-import '../../../data/fake_cart_provider.dart';
 import '../../../data/fake_seed.dart';
 import '../../../data/profile_repository.dart';
+import '../../cart/providers/cart_provider.dart';
 
 /// CheckoutProvider — state cho màn thanh toán (UC-13 → UC-17).
 ///
-/// Đọc giỏ hàng từ [FakeCartProvider] (contract tối thiểu của Dev 2),
+/// Đọc giỏ hàng từ [CartProvider] thật của Dev 2/Tú (chỉ đọc + clearCart),
 /// validate voucher + đặt hàng qua [CheckoutRepository],
 /// load địa chỉ đã lưu qua [ProfileRepository].
 ///
@@ -18,10 +18,12 @@ import '../../../data/profile_repository.dart';
 /// Đã tạo issue cho Dev 1 bổ sung field này vào core_module.
 class CheckoutProvider extends ChangeNotifier {
   CheckoutProvider({
-    required this._checkoutRepository,
-    required this._profileRepository,
-    required this._cart,
-  }) {
+    required CheckoutRepository checkoutRepository,
+    required ProfileRepository profileRepository,
+    required CartProvider cart,
+  })  : _checkoutRepository = checkoutRepository,
+        _profileRepository = profileRepository,
+        _cart = cart {
     // Giỏ hàng đổi (Dev 2 thêm/bớt món) → tiền phải tính lại.
     _cart.addListener(_onCartChanged);
     loadAddresses();
@@ -29,7 +31,7 @@ class CheckoutProvider extends ChangeNotifier {
 
   final CheckoutRepository _checkoutRepository;
   final ProfileRepository _profileRepository;
-  final FakeCartProvider _cart;
+  final CartProvider _cart;
 
   // ─── State ────────────────────────────────────────────────
 
@@ -49,13 +51,13 @@ class CheckoutProvider extends ChangeNotifier {
 
   List<OrderItemModel> get items => _cart.items;
 
-  bool get isCartEmpty => _cart.isEmpty;
+  bool get isCartEmpty => _cart.items.isEmpty;
 
-  int get itemCount => _cart.itemCount;
+  int get itemCount => _cart.totalQuantity;
 
   // ─── Tính tiền (luôn roundToDouble để khớp VND) ───────────
 
-  double get subtotal => _cart.subtotal.roundToDouble();
+  double get subtotal => _cart.totalAmount.roundToDouble();
 
   double get discount =>
       (voucher?.calculateDiscount(subtotal) ?? 0).roundToDouble();
@@ -186,7 +188,7 @@ class CheckoutProvider extends ChangeNotifier {
         loyaltyPointsEarned: estimatedPoints,
       );
       final created = await _checkoutRepository.placeOrder(order);
-      _cart.clear();
+      _cart.clearCart();
       return created;
     } finally {
       isPlacingOrder = false;
