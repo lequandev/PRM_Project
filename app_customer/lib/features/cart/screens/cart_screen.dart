@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:intl/intl.dart';
@@ -170,7 +171,8 @@ class CartScreen extends StatelessWidget {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Proceed to checkout
+                          // [Dev3] Nối sang checkout flow (UC-13→17)
+                          context.push('/checkout');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.goldPrimary,
