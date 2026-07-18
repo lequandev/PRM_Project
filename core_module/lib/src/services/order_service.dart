@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/order/order_model.dart';
 import '../models/order/order_status.dart';
+import '../models/common/app_exception.dart';
 
 /// OrderService — Firestore access layer cho Orders.
 ///
@@ -42,8 +43,17 @@ class OrderService {
   // Dev 4 dùng — StaffQueueProvider
 
   Stream<List<OrderModel>> watchActiveOrders() {
-    // TODO: Dev 1 implements khi Dev 4 cần (UC-20)
-    throw UnimplementedError('OrderService.watchActiveOrders — chưa implement');
+    return _db
+        .collection('orders')
+        .where('status', whereIn: ['pending', 'accepted', 'preparing', 'ready'])
+        .snapshots()
+        .map((snap) {
+          final orders = snap.docs
+              .map((doc) => OrderModel.fromFirestore(doc.data(), doc.id))
+              .toList();
+          orders.sort((a, b) => (a.createdAt ?? DateTime.now()).compareTo(b.createdAt ?? DateTime.now()));
+          return orders;
+        });
   }
 
   // ─── UC-21→24, UC-26: Cập nhật trạng thái ────────────
@@ -53,14 +63,39 @@ class OrderService {
     required String orderId,
     required OrderStatus newStatus,
     String? cancelReason,
-  }) {
-    // TODO: Dev 1 implements khi Dev 4 cần (UC-21→24, UC-26)
-    throw UnimplementedError('OrderService.updateOrderStatus — chưa implement');
+  }) async {
+    try {
+      final updates = <String, dynamic>{
+        'status': newStatus.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      if (newStatus == OrderStatus.accepted) {
+        updates['acceptedAt'] = FieldValue.serverTimestamp();
+      } else if (newStatus == OrderStatus.ready) {
+        updates['readyAt'] = FieldValue.serverTimestamp();
+      } else if (newStatus == OrderStatus.delivered) {
+        updates['deliveredAt'] = FieldValue.serverTimestamp();
+      }
+      if (cancelReason != null) {
+        updates['cancelReason'] = cancelReason;
+      }
+      await _db.collection('orders').doc(orderId).update(updates);
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
-  Future<OrderModel> getOrderById(String orderId) {
-    // TODO: Dev 1 implements khi Dev 3/4 cần
-    throw UnimplementedError('OrderService.getOrderById — chưa implement');
+  Future<OrderModel> getOrderById(String orderId) async {
+    try {
+      final doc = await _db.collection('orders').doc(orderId).get();
+      if (!doc.exists || doc.data() == null) {
+        throw DatabaseException.notFound('Đơn hàng');
+      }
+      return OrderModel.fromFirestore(doc.data()!, doc.id);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw DatabaseException.unknown(e);
+    }
   }
 
   // ─── UC-37: Báo cáo doanh thu ─────────────────────────
