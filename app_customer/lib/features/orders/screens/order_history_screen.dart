@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 
 import '../../../data/order_repository.dart';
 import '../providers/order_history_provider.dart';
-import '../providers/widgets/review_sheet.dart';
-import '../providers/widgets/status_chip.dart';
+import '../widgets/review_sheet.dart';
+import '../widgets/status_chip.dart';
 
 /// UC-18 — Lịch sử đơn hàng + entry đánh giá (UC-39) cho đơn hoàn thành.
 class OrderHistoryScreen extends StatelessWidget {

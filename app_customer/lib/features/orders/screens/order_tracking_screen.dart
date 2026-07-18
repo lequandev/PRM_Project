@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../../../data/order_repository.dart';
 import '../providers/order_tracking_provider.dart';
-import '../providers/widgets/pickup_hero_card.dart';
-import '../providers/widgets/pickup_pass_sheet.dart';
-import '../providers/widgets/status_chip.dart';
+import '../widgets/pickup_hero_card.dart';
+import '../widgets/pickup_pass_sheet.dart';
+import '../widgets/status_chip.dart';
 
 /// UC-19 — Theo dõi đơn hàng realtime.
 /// - Đơn PICKUP (chưa hủy): hero "coffee brewing tracker" — ly cà phê đầy dần
