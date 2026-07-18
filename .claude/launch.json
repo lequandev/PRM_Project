@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app_customer_web",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd app_customer && flutter run -d web-server --web-port=5317"],
+      "port": 5317
+    }
+  ]
+}
