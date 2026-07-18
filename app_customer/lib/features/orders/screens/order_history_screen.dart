@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 
 import '../../../data/order_repository.dart';
 import '../providers/order_history_provider.dart';
-import '../widgets/review_sheet.dart';
-import '../widgets/status_chip.dart';
+import '../providers/widgets/review_sheet.dart';
+import '../providers/widgets/status_chip.dart';
 
 /// UC-18 — Lịch sử đơn hàng + entry đánh giá (UC-39) cho đơn hoàn thành.
 class OrderHistoryScreen extends StatelessWidget {
@@ -44,10 +44,7 @@ class _OrderHistoryView extends StatelessWidget {
     if (provider.isLoading) return const _SkeletonList();
 
     if (provider.error != null) {
-      return _ErrorState(
-        message: provider.error!,
-        onRetry: provider.refresh,
-      );
+      return _ErrorState(message: provider.error!, onRetry: provider.refresh);
     }
 
     final orders = provider.filteredOrders;
@@ -62,8 +59,7 @@ class _OrderHistoryView extends StatelessWidget {
               itemCount: orders.length,
               separatorBuilder: (_, __) =>
                   const SizedBox(height: AppSpacing.md),
-              itemBuilder: (context, index) =>
-                  _OrderCard(order: orders[index]),
+              itemBuilder: (context, index) => _OrderCard(order: orders[index]),
             ),
     );
   }
@@ -81,7 +77,10 @@ class _FilterBar extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xs,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.xs,
       ),
       child: Row(
         children: [
@@ -127,8 +126,9 @@ class _OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = order.orderStatus;
-    final itemsSummary =
-        order.items.map((i) => '${i.quantity}x ${i.productName}').join(', ');
+    final itemsSummary = order.items
+        .map((i) => '${i.quantity}x ${i.productName}')
+        .join(', ');
     final typeAndPayment =
         '${OrderType.fromString(order.orderType).label}'
         ' · ${PaymentMethod.fromString(order.paymentMethod).label}';
@@ -164,16 +164,18 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 order.createdAt.toVnDateTimeOrDash,
-                style: AppTypography.caption
-                    .copyWith(color: AppColors.textHint),
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textHint,
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
 
               // Tóm tắt món
               Text(
                 itemsSummary,
-                style: AppTypography.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -187,16 +189,18 @@ class _OrderCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       typeAndPayment,
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textSecondary),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
                     order.totalAmount.toVnd,
-                    style: AppTypography.priceSmall
-                        .copyWith(color: AppColors.brownAccent),
+                    style: AppTypography.priceSmall.copyWith(
+                      color: AppColors.brownAccent,
+                    ),
                   ),
                 ],
               ),
@@ -257,8 +261,7 @@ class _EmptyState extends StatelessWidget {
         Text(
           'Đặt món đầu tiên và theo dõi đơn tại đây nhé!',
           textAlign: TextAlign.center,
-          style:
-              AppTypography.bodyMedium.copyWith(color: AppColors.textHint),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textHint),
         ),
         const SizedBox(height: AppSpacing.lg),
         Center(
@@ -299,14 +302,18 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded,
-                size: 56, color: AppColors.error),
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 56,
+              color: AppColors.error,
+            ),
             const SizedBox(height: AppSpacing.md),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             OutlinedButton.icon(
