@@ -28,6 +28,12 @@ dependencies:
   # QR cho Pickup Pass (UC-19/UC-24) — render thuần Dart, không native code
   qr_flutter: ^4.1.0
 
+  # UC-05: bản đồ + định vị cho form địa chỉ (stack miễn phí, không cần API key)
+  flutter_map: ^8.2.2      # OpenStreetMap tiles
+  latlong2: ^0.9.1
+  geolocator: ^14.0.2      # GPS vị trí hiện tại
+  http: ^1.5.0             # Photon autocomplete + Nominatim reverse geocode
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

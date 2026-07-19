@@ -265,5 +265,6 @@ class _MiniBadge extends StatelessWidget {
   }
 }
 
-String _fullAddress(AddressModel a) =>
-    '${a.street}, ${a.ward}, ${a.district}, ${a.city}';
+String _fullAddress(AddressModel a) => [a.street, a.ward, a.district, a.city]
+    .where((part) => part.isNotEmpty)
+    .join(', ');

@@ -274,8 +274,12 @@ class _AddressCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  '${address.street}, ${address.ward}, '
-                  '${address.district}, ${address.city}',
+                  [
+                    address.street,
+                    address.ward,
+                    address.district,
+                    address.city,
+                  ].where((part) => part.isNotEmpty).join(', '),
                   style: AppTypography.bodySmall
                       .copyWith(color: AppColors.textSecondary),
                 ),
