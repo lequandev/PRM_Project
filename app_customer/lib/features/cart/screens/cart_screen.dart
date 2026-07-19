@@ -70,71 +70,97 @@ class CartScreen extends StatelessWidget {
                 child: ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: cartProvider.items.length,
-                  separatorBuilder: (_, __) => const Divider(color: AppColors.borderLight),
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final item = cartProvider.items[index];
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: item.productImageUrl != null && item.productImageUrl!.isNotEmpty
-                              ? Image.network(
-                                  item.productImageUrl!,
-                                  width: 76,
-                                  height: 76,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: 76,
-                                    height: 76,
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.borderLight),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 4))
+                        ]
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: item.productImageUrl != null && item.productImageUrl!.isNotEmpty
+                                ? Image.network(
+                                    item.productImageUrl!,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: AppColors.beigeWarm,
+                                      child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
+                                    ),
+                                  )
+                                : Container(
+                                    width: 80,
+                                    height: 80,
                                     color: AppColors.beigeWarm,
                                     child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
                                   ),
-                                )
-                              : Container(
-                                  width: 76,
-                                  height: 76,
-                                  color: AppColors.beigeWarm,
-                                  child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        item.productName,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary, height: 1.3),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => _showDeleteConfirmDialog(context, cartProvider, index),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.error.withValues(alpha: 0.08),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.delete_outline, color: AppColors.error, size: 18),
+                                      ),
+                                    ),
+                                  ]
                                 ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.productName,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, height: 1.3),
-                              ),
-                              if (item.customizations.isNotEmpty) ...[
-                                const SizedBox(height: 6),
-                                Text(
-                                  item.customizations.entries
-                                      .map((e) => '${_translateCustomizationType(e.key)}: ${_translateCustomizationValue(e.value)}')
-                                      .join(' • '),
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+                                if (item.customizations.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    item.customizations.entries
+                                        .map((e) => '${_translateCustomizationType(e.key)}: ${_translateCustomizationValue(e.value)}')
+                                        .join(' • '),
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      formatCurrency.format(item.unitPrice),
+                                      style: const TextStyle(color: AppColors.goldPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    _buildQuantityController(context, cartProvider, index, item),
+                                  ],
                                 ),
                               ],
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 4),
-                                    child: Text(
-                                      formatCurrency.format(item.unitPrice),
-                                      style: const TextStyle(color: AppColors.goldPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                                    ),
-                                  ),
-                                  _buildQuantityController(context, cartProvider, index, item),
-                                ],
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      )
                     );
                   },
                 ),
@@ -171,8 +197,63 @@ class CartScreen extends StatelessWidget {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // [Dev3] Nối sang checkout flow (UC-13→17)
-                          context.push('/checkout');
+                          if (cartProvider.items.isEmpty) return;
+                          
+                          // Show success dialog
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (ctx) {
+                              Future.delayed(const Duration(seconds: 3), () {
+                                if (ctx.mounted && Navigator.canPop(ctx)) {
+                                  Navigator.of(ctx).pop(); // close dialog
+                                  cartProvider.clearCart();
+                                  if (context.mounted && context.canPop()) {
+                                    context.pop(); // go back to menu
+                                  }
+                                }
+                              });
+                              return Dialog(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.goldPrimary.withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.check_circle_rounded, color: AppColors.goldPrimary, size: 64),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      const Text(
+                                        'Đặt hàng thành công!',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.brownAccent,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text(
+                                        'Đơn hàng của bạn đang được chuẩn bị. Vui lòng đợi trong giây lát.',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                          height: 1.4,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.goldPrimary,
@@ -193,47 +274,57 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildQuantityController(BuildContext context, CartProvider provider, int index, OrderItemModel item) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: const Icon(Icons.remove_circle_outline, color: AppColors.goldPrimary, size: 22),
-          onPressed: () {
-            if (item.quantity > 1) {
-              provider.updateQuantity(index, item.quantity - 1);
-            } else {
-              _showDeleteConfirmDialog(context, provider, index);
-            }
-          },
-        ),
-        SizedBox(
-          width: 28,
-          child: Text(
-            '${item.quantity}',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundAlt,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (item.quantity > 1) {
+                provider.updateQuantity(index, item.quantity - 1);
+              } else {
+                _showDeleteConfirmDialog(context, provider, index);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.remove_rounded, color: AppColors.brownAccent, size: 16),
+            ),
           ),
-        ),
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: const Icon(Icons.add_circle_outline, color: AppColors.goldPrimary, size: 22),
-          onPressed: () {
-            provider.updateQuantity(index, item.quantity + 1);
-          },
-        ),
-        const SizedBox(width: 12),
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: const Icon(Icons.delete_outline, color: AppColors.textHint, size: 22),
-          onPressed: () {
-            _showDeleteConfirmDialog(context, provider, index);
-          },
-        ),
-      ],
+          Container(
+            constraints: const BoxConstraints(minWidth: 32),
+            alignment: Alignment.center,
+            child: Text(
+              '${item.quantity}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: AppColors.brownAccent,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => provider.updateQuantity(index, item.quantity + 1),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add_rounded, color: AppColors.brownAccent, size: 16),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

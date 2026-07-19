@@ -535,20 +535,24 @@ class _MenuGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(AppRadius.card),
         boxShadow: AppShadow.sm,
       ),
-      child: Column(
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            if (i > 0)
-              const Divider(
-                  height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md,
-                  color: AppColors.borderLight),
-            children[i],
+      child: Material(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0)
+                const Divider(
+                    height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md,
+                    color: AppColors.borderLight),
+              children[i],
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
