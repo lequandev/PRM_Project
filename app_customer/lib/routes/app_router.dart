@@ -32,6 +32,12 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
     initialLocation: '/menu',
     refreshListenable: authProvider,
     redirect: (context, state) {
+      if (state.matchedLocation == '/') {
+        if (authProvider == null) return '/menu';
+        final isLoggedIn = authProvider.currentUser != null;
+        return isLoggedIn ? '/menu' : '/login';
+      }
+
       if (authProvider == null) return null; // DEMO MODE — không chặn route
 
       final isLoggedIn = authProvider.currentUser != null;
@@ -47,6 +53,15 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/',
+        parentNavigatorKey: _rootNavigatorKey,
+        redirect: (context, state) {
+          if (authProvider == null) return '/menu';
+          final isLoggedIn = authProvider.currentUser != null;
+          return isLoggedIn ? '/menu' : '/login';
+        },
+      ),
       GoRoute(
         path: '/login',
         parentNavigatorKey: _rootNavigatorKey,

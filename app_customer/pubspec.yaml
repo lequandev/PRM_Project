@@ -28,6 +28,10 @@ dependencies:
   # QR cho Pickup Pass (UC-19/UC-24) — render thuần Dart, không native code
   qr_flutter: ^4.1.0
 
+  # Utilities & Auth dependencies
+  intl: ^0.19.0
+  firebase_auth: ^5.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
