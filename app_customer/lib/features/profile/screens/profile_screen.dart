@@ -537,13 +537,18 @@ class _MenuGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Shadow ở Container ngoài, MÀU ở Material trong — ListTile vẽ ink
+    // splash lên Material gần nhất, đặt màu ở Container sẽ che mất ink.
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(AppRadius.card),
         boxShadow: AppShadow.sm,
       ),
-      child: Column(
+      child: Material(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
         children: [
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0)
@@ -553,6 +558,7 @@ class _MenuGroup extends StatelessWidget {
             children[i],
           ],
         ],
+        ),
       ),
     );
   }

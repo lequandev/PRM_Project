@@ -142,8 +142,6 @@ class CoreProfileRepository implements ProfileRepository {
   Future<void> sendPasswordResetEmail(String email) =>
       _auth.sendPasswordResetEmail(email);
 
-  // ─── Chưa có trong core — dùng fake tạm ───
-
   @override
   Future<void> updateProfile({
     required String uid,
@@ -151,31 +149,33 @@ class CoreProfileRepository implements ProfileRepository {
     String? phone,
     String? avatarUrl,
   }) =>
-      _fallback.updateProfile(
+      _users.updateProfile(
           uid: uid, name: name, phone: phone, avatarUrl: avatarUrl);
 
   @override
   Future<List<AddressModel>> getAddresses(String uid) =>
-      _fallback.getAddresses(uid);
+      _users.getAddresses(uid);
 
   @override
   Future<AddressModel> addAddress(
           {required String uid, required AddressModel address}) =>
-      _fallback.addAddress(uid: uid, address: address);
+      _users.addAddress(uid: uid, address: address);
 
   @override
   Future<void> updateAddress(
           {required String uid, required AddressModel address}) =>
-      _fallback.updateAddress(uid: uid, address: address);
+      _users.updateAddress(uid: uid, address: address);
 
   @override
   Future<void> deleteAddress(
           {required String uid, required String addressId}) =>
-      _fallback.deleteAddress(uid: uid, addressId: addressId);
+      _users.deleteAddress(uid: uid, addressId: addressId);
 
   @override
   Future<void> deactivateAccount(String uid) =>
-      _fallback.deactivateAccount(uid);
+      _users.deactivateAccount(uid);
+
+  // ─── Loyalty: core CHƯA có service — fake tạm, chờ bàn với Dev 1 ───
 
   @override
   Future<List<LoyaltyTransactionModel>> getLoyaltyTransactions(String uid) =>
