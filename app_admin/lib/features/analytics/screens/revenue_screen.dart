@@ -40,7 +40,7 @@ class RevenueScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Tổng quan doanh thu theo thời gian (UC-37)',
+                      'Tổng quan doanh thu theo thời gian',
                       style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 14),
                     ),

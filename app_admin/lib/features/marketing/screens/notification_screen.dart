@@ -78,7 +78,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
         const Text(
-          'Gửi thông báo tới tất cả hoặc nhóm khách hàng (UC-30)',
+          'Gửi thông báo tới tất cả hoặc nhóm khách hàng',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
         const SizedBox(height: 24),

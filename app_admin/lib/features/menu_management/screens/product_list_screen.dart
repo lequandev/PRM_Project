@@ -146,7 +146,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       onTap: () => provider.setFilterStatus('active'),
                     ),
                     _FilterChip(
-                      label: 'Đã archive',
+                      label: 'Đã lưu trữ',
                       isSelected: provider.filterStatus == 'archived',
                       onTap: () => provider.setFilterStatus('archived'),
                     ),
@@ -389,7 +389,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                       Icons.archive_rounded,
                                                       size: 18,
                                                       color: AppColors.warning),
-                                                  tooltip: 'Archive',
+                                                  tooltip: 'Lưu trữ',
                                                   onPressed: () =>
                                                       _confirmArchive(
                                                           context, product),
@@ -524,7 +524,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                       fontWeight: FontWeight.w600,
                                                       fontSize: 13)),
                                               if (product.isArchived)
-                                                const Text('Đã archive',
+                                                const Text('Đã lưu trữ',
                                                     style: TextStyle(
                                                         color: AppColors.textHint,
                                                         fontSize: 11)),
@@ -575,7 +575,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           ),
                                           Text(
                                             product.isArchived
-                                                ? 'Archive'
+                                                ? 'Đã lưu trữ'
                                                 : product.isAvailable
                                                     ? 'Có bán'
                                                     : 'Hết hàng',
@@ -604,7 +604,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                   Icons.archive_rounded,
                                                   size: 18,
                                                   color: AppColors.warning),
-                                              tooltip: 'Archive',
+                                              tooltip: 'Lưu trữ',
                                               onPressed: () =>
                                                   _confirmArchive(context, product),
                                             )
@@ -640,7 +640,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Xác nhận Archive'),
+        title: const Text('Xác nhận lưu trữ'),
         content: Text(
             'Sản phẩm "${product.name}" sẽ bị ẩn khỏi menu. Bạn có thể khôi phục sau.'),
         actions: [
@@ -659,7 +659,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               Navigator.pop(ctx);
               context.read<AdminProductProvider>().archiveProduct(product.id);
             },
-            child: const Text('Archive'),
+            child: const Text('Lưu trữ'),
           ),
         ],
       ),

@@ -36,7 +36,7 @@ class ReviewModerationScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Duyệt hoặc từ chối đánh giá khách hàng (UC-40) • ${provider.pendingReviews.length} chờ duyệt',
+                      'Duyệt hoặc từ chối đánh giá khách hàng • ${provider.pendingReviews.length} chờ duyệt',
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 14),
                     ),

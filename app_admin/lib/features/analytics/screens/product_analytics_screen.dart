@@ -30,7 +30,7 @@ class ProductAnalyticsScreen extends StatelessWidget {
               ),
             ),
             const Text(
-              'Top 10 sản phẩm theo số lượng bán (UC-38)',
+              'Top 10 sản phẩm theo số lượng bán',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 24),

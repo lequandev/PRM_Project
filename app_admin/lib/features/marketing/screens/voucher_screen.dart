@@ -129,7 +129,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                                 maxCrossAxisExtent: 380,
                                 mainAxisSpacing: 16,
                                 crossAxisSpacing: 16,
-                                mainAxisExtent: 220,
+                                mainAxisExtent: 235,
                               ),
                               itemCount: provider.vouchers.length,
                               itemBuilder: (context, i) {
@@ -462,7 +462,7 @@ class _VoucherCard extends StatelessWidget {
             : 'Đã tắt';
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -484,26 +484,30 @@ class _VoucherCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.brownAccent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  v.code,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                    letterSpacing: 1.2,
+              Flexible(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.brownAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    v.code,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      letterSpacing: 1.1,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -512,14 +516,14 @@ class _VoucherCard extends StatelessWidget {
                   statusLabel,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             v.description,
             style: const TextStyle(
@@ -527,7 +531,7 @@ class _VoucherCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             children: [
               const Icon(Icons.discount_rounded,
@@ -539,25 +543,29 @@ class _VoucherCard extends StatelessWidget {
                     : fmt.format(v.discountValue),
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 18,
+                  fontSize: 17,
                   color: AppColors.brownAccent,
                 ),
               ),
               if (v.maxDiscountAmount != null) ...[
                 const SizedBox(width: 4),
-                Text(
-                  '(tối đa ${fmt.format(v.maxDiscountAmount!)})',
-                  style: const TextStyle(
-                      color: AppColors.textHint, fontSize: 11),
+                Expanded(
+                  child: Text(
+                    '(tối đa ${fmt.format(v.maxDiscountAmount!)})',
+                    style: const TextStyle(
+                        color: AppColors.textHint, fontSize: 10),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             'Đơn tối thiểu: ${fmt.format(v.minOrderValue)} • ${dtFmt.format(v.startDate)} → ${dtFmt.format(v.expiresAt)}',
             style: const TextStyle(
-                color: AppColors.textHint, fontSize: 11),
+                color: AppColors.textHint, fontSize: 10),
           ),
           const Spacer(),
           Row(
@@ -565,7 +573,7 @@ class _VoucherCard extends StatelessWidget {
               Text(
                 'Đã dùng: ${v.usageCount}${v.usageLimit != null ? '/${v.usageLimit}' : ''}',
                 style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 12),
+                    color: AppColors.textSecondary, fontSize: 11),
               ),
               const Spacer(),
               if (!isExpired)
