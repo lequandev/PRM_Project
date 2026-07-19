@@ -110,11 +110,10 @@ class CoreCheckoutRepository implements CheckoutRepository {
 /// TODO(core PR #2): khi UserService có addresses CRUD / updateProfile /
 /// deactivateAccount và loyalty có service thật → thay từng dòng _fallback.
 class CoreProfileRepository implements ProfileRepository {
-  CoreProfileRepository(this._users, this._auth, this._fallback);
+  CoreProfileRepository(this._users, this._auth);
 
   final UserService _users;
   final AuthService _auth;
-  final FakeProfileRepository _fallback;
 
   @override
   Future<ProfileData> getProfile(String uid) async {
@@ -175,13 +174,20 @@ class CoreProfileRepository implements ProfileRepository {
   Future<void> deactivateAccount(String uid) =>
       _users.deactivateAccount(uid);
 
-  // ─── Loyalty: core CHƯA có service — fake tạm, chờ bàn với Dev 1 ───
+  // ─── Loyalty: core CHƯA có LoyaltyService (UC-27/28) ───
+  // Trả rỗng THẬT thay vì history giả: điểm thật (0) + lịch sử giả (1.250)
+  // trên cùng màn hình là mâu thuẫn lộ liễu. Fake history chỉ dùng ở demo mode.
+  // TODO(bàn với Dev 1): cần LoyaltyService (đọc /users/{uid}/loyaltyTransactions,
+  // redeem bằng Firestore transaction) + luồng CỘNG điểm khi đơn delivered
+  // (staff app? — rules hiện chưa cho staff update /users của customer).
 
   @override
-  Future<List<LoyaltyTransactionModel>> getLoyaltyTransactions(String uid) =>
-      _fallback.getLoyaltyTransactions(uid);
+  Future<List<LoyaltyTransactionModel>> getLoyaltyTransactions(String uid) async {
+    return const [];
+  }
 
   @override
-  Future<String> redeemPoints({required String uid, required int points}) =>
-      _fallback.redeemPoints(uid: uid, points: points);
+  Future<String> redeemPoints({required String uid, required int points}) {
+    throw Exception('Đổi điểm sẽ khả dụng khi core_module có LoyaltyService.');
+  }
 }

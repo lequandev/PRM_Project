@@ -32,9 +32,8 @@ class App extends StatelessWidget {
           // Profile lai: hồ sơ/điểm/reset-password thật, phần UserService
           // còn stub chạy fake (xem CoreProfileRepository).
           Provider<ProfileRepository>(
-            create: (_) => CoreProfileRepository(
-              UserService(), AuthService(), FakeProfileRepository(),
-            ),
+            create: (_) =>
+                CoreProfileRepository(UserService(), AuthService()),
           ),
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           // Session thật từ user đăng nhập — order phải mang uid thật,
