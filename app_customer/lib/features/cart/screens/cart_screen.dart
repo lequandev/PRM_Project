@@ -198,62 +198,10 @@ class CartScreen extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           if (cartProvider.items.isEmpty) return;
-                          
-                          // Show success dialog
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (ctx) {
-                              Future.delayed(const Duration(seconds: 3), () {
-                                if (ctx.mounted && Navigator.canPop(ctx)) {
-                                  Navigator.of(ctx).pop(); // close dialog
-                                  cartProvider.clearCart();
-                                  if (context.mounted && context.canPop()) {
-                                    context.pop(); // go back to menu
-                                  }
-                                }
-                              });
-                              return Dialog(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.goldPrimary.withValues(alpha: 0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(Icons.check_circle_rounded, color: AppColors.goldPrimary, size: 64),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      const Text(
-                                        'Đặt hàng thành công!',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.brownAccent,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      const Text(
-                                        'Đơn hàng của bạn đang được chuẩn bị. Vui lòng đợi trong giây lát.',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textSecondary,
-                                          height: 1.4,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
+                          // [Dev3] Vào checkout flow thật (UC-13->17):
+                          // chọn nhận hàng/địa chỉ/voucher/thanh toán rồi
+                          // tạo order thật. Trước đây chỉ bung dialog giả.
+                          context.push('/checkout');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.goldPrimary,
