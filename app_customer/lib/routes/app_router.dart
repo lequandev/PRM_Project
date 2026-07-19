@@ -47,6 +47,11 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
       return null;
     },
     routes: [
+      // Alias an toàn — code cũ còn go('/') hoặc go('/home') thì về menu
+      // thay vì văng GoException "Page Not Found".
+      GoRoute(path: '/', redirect: (_, __) => '/menu'),
+      GoRoute(path: '/home', redirect: (_, __) => '/menu'),
+
       GoRoute(
         path: '/login',
         parentNavigatorKey: _rootNavigatorKey,
