@@ -1,16 +1,17 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../data/app_session.dart';
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 
 /// ProfileProvider — UC-03 (reset password), UC-04 (hồ sơ), UC-06 (xóa tài khoản).
 ///
 /// Nhận [ProfileRepository] qua constructor (quy ước nhóm: provider + ChangeNotifier,
 /// UI không gọi thẳng service). MOCK MODE dùng FakeProfileRepository.
 class ProfileProvider extends ChangeNotifier {
-  ProfileProvider(this._repository);
+  ProfileProvider(this._repository, this._session);
 
   final ProfileRepository _repository;
+  final CurrentSession _session;
 
   ProfileData? _profile;
   bool _isLoading = false;
@@ -28,7 +29,7 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _profile = await _repository.getProfile(AppSession.uid);
+      _profile = await _repository.getProfile(_session.uid);
     } catch (e) {
       _error = 'Không tải được hồ sơ. Vui lòng thử lại.';
     } finally {
@@ -44,11 +45,11 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await _repository.updateProfile(
-        uid: AppSession.uid,
+        uid: _session.uid,
         name: name,
         phone: phone,
       );
-      _profile = await _repository.getProfile(AppSession.uid);
+      _profile = await _repository.getProfile(_session.uid);
       return true;
     } catch (e) {
       _error = 'Cập nhật hồ sơ thất bại. Vui lòng thử lại.';
@@ -66,7 +67,7 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _repository.deactivateAccount(AppSession.uid);
+      await _repository.deactivateAccount(_session.uid);
       return true;
     } catch (e) {
       _error = 'Không thể xóa tài khoản. Vui lòng thử lại.';

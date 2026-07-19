@@ -2,6 +2,7 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 
 import 'checkout_repository.dart';
 import 'order_repository.dart';
+import 'profile_repository.dart';
 import 'session.dart';
 
 /// Bản THẬT của [OrderRepository] — bọc service Firebase trong core_module.
@@ -60,10 +61,14 @@ class CoreOrderRepository implements OrderRepository {
 
 /// Bản THẬT của [CheckoutRepository] — voucher + đặt hàng qua core services.
 class CoreCheckoutRepository implements CheckoutRepository {
-  CoreCheckoutRepository(this._vouchers, this._orders);
+  CoreCheckoutRepository(this._vouchers, this._orders, this._storeConfig);
 
   final VoucherService _vouchers;
   final OrderService _orders;
+  final StoreConfigService _storeConfig;
+
+  @override
+  Future<StoreConfig> getStoreConfig() => _storeConfig.getStoreConfig();
 
   @override
   Future<VoucherModel> validateVoucher({
@@ -96,4 +101,87 @@ class CoreCheckoutRepository implements CheckoutRepository {
     }
     return created;
   }
+}
+
+/// Bản LAI của [ProfileRepository]: phần core đã implement thì chạy THẬT
+/// (hồ sơ + điểm từ UserService.getUserById, reset password từ AuthService),
+/// phần UserService còn stub thì tạm ủy quyền về [FakeProfileRepository].
+///
+/// TODO(core PR #2): khi UserService có addresses CRUD / updateProfile /
+/// deactivateAccount và loyalty có service thật → thay từng dòng _fallback.
+class CoreProfileRepository implements ProfileRepository {
+  CoreProfileRepository(this._users, this._auth, this._fallback);
+
+  final UserService _users;
+  final AuthService _auth;
+  final FakeProfileRepository _fallback;
+
+  @override
+  Future<ProfileData> getProfile(String uid) async {
+    final user = await _users.getUserById(uid);
+    if (user == null) {
+      throw DatabaseException.notFound('Tài khoản');
+    }
+    return ProfileData(
+      uid: user.uid,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl,
+      loyaltyPoints: user.loyaltyPoints,
+    );
+  }
+
+  @override
+  Future<int> getLoyaltyPoints(String uid) async {
+    final user = await _users.getUserById(uid);
+    return user?.loyaltyPoints ?? 0;
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) =>
+      _auth.sendPasswordResetEmail(email);
+
+  // ─── Chưa có trong core — dùng fake tạm ───
+
+  @override
+  Future<void> updateProfile({
+    required String uid,
+    String? name,
+    String? phone,
+    String? avatarUrl,
+  }) =>
+      _fallback.updateProfile(
+          uid: uid, name: name, phone: phone, avatarUrl: avatarUrl);
+
+  @override
+  Future<List<AddressModel>> getAddresses(String uid) =>
+      _fallback.getAddresses(uid);
+
+  @override
+  Future<AddressModel> addAddress(
+          {required String uid, required AddressModel address}) =>
+      _fallback.addAddress(uid: uid, address: address);
+
+  @override
+  Future<void> updateAddress(
+          {required String uid, required AddressModel address}) =>
+      _fallback.updateAddress(uid: uid, address: address);
+
+  @override
+  Future<void> deleteAddress(
+          {required String uid, required String addressId}) =>
+      _fallback.deleteAddress(uid: uid, addressId: addressId);
+
+  @override
+  Future<void> deactivateAccount(String uid) =>
+      _fallback.deactivateAccount(uid);
+
+  @override
+  Future<List<LoyaltyTransactionModel>> getLoyaltyTransactions(String uid) =>
+      _fallback.getLoyaltyTransactions(uid);
+
+  @override
+  Future<String> redeemPoints({required String uid, required int points}) =>
+      _fallback.redeemPoints(uid: uid, points: points);
 }

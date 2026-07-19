@@ -28,9 +28,14 @@ class App extends StatelessWidget {
         // ── Dev 2 / Tú ──
         ChangeNotifierProvider(create: (_) => MenuProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        // ── Profile: UserService trong core còn stub → tạm luôn dùng fake ──
-        Provider<ProfileRepository>(create: (_) => FakeProfileRepository()),
         if (firebaseReady) ...[
+          // Profile lai: hồ sơ/điểm/reset-password thật, phần UserService
+          // còn stub chạy fake (xem CoreProfileRepository).
+          Provider<ProfileRepository>(
+            create: (_) => CoreProfileRepository(
+              UserService(), AuthService(), FakeProfileRepository(),
+            ),
+          ),
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           // Session thật từ user đăng nhập — order phải mang uid thật,
           // không thì security rules (customerId == auth.uid) chặn đọc đơn.
@@ -42,10 +47,12 @@ class App extends StatelessWidget {
                 CoreOrderRepository(OrderService(), ProductService(), session),
           ),
           Provider<CheckoutRepository>(
-            create: (_) =>
-                CoreCheckoutRepository(VoucherService(), OrderService()),
+            create: (_) => CoreCheckoutRepository(
+              VoucherService(), OrderService(), StoreConfigService(),
+            ),
           ),
         ] else ...[
+          Provider<ProfileRepository>(create: (_) => FakeProfileRepository()),
           Provider<CurrentSession>(create: (_) => const CurrentSession.demo()),
           Provider<OrderRepository>.value(value: fakeOrders!),
           Provider<CheckoutRepository>(

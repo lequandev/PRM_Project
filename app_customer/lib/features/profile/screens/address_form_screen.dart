@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../providers/address_provider.dart';
 
 /// AddressFormScreen — UC-05: thêm mới ([initial] == null) hoặc sửa địa chỉ.
@@ -15,7 +16,10 @@ class AddressFormScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => AddressProvider(context.read<ProfileRepository>()),
+      create: (context) => AddressProvider(
+        context.read<ProfileRepository>(),
+        context.read<CurrentSession>(),
+      ),
       child: _AddressFormView(initial: initial),
     );
   }

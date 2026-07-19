@@ -29,6 +29,7 @@ class CheckoutProvider extends ChangeNotifier {
     // Giỏ hàng đổi (Dev 2 thêm/bớt món) → tiền phải tính lại.
     _cart.addListener(_onCartChanged);
     loadAddresses();
+    _loadStoreConfig();
   }
 
   final CheckoutRepository _checkoutRepository;
@@ -50,6 +51,12 @@ class CheckoutProvider extends ChangeNotifier {
   List<AddressModel> addresses = [];
   bool isLoadingAddresses = false;
 
+  // Cấu hình cửa hàng (UC-36) — mặc định theo FakeSeed, thay bằng giá trị
+  // thật từ StoreConfigService ngay khi load xong.
+  double deliveryFeeConfig = FakeSeed.deliveryFee;
+  double minDeliveryOrder = FakeSeed.minDeliveryOrder;
+  double loyaltyRate = FakeSeed.loyaltyRate;
+
   // ─── Giỏ hàng (chỉ đọc) ───────────────────────────────────
 
   List<OrderItemModel> get items => _cart.items;
@@ -66,15 +73,15 @@ class CheckoutProvider extends ChangeNotifier {
       (voucher?.calculateDiscount(subtotal) ?? 0).roundToDouble();
 
   double get deliveryFee =>
-      orderType == OrderType.delivery ? FakeSeed.deliveryFee.roundToDouble() : 0;
+      orderType == OrderType.delivery ? deliveryFeeConfig.roundToDouble() : 0;
 
   double get total => (subtotal - discount + deliveryFee).roundToDouble();
 
-  int get estimatedPoints => (total * FakeSeed.loyaltyRate).floor();
+  int get estimatedPoints => (total * loyaltyRate).floor();
 
   /// Đơn giao hàng chưa đạt giá trị tối thiểu?
   bool get isBelowDeliveryMinimum =>
-      orderType == OrderType.delivery && subtotal < FakeSeed.minDeliveryOrder;
+      orderType == OrderType.delivery && subtotal < minDeliveryOrder;
 
   /// Đủ điều kiện bấm nút Đặt hàng?
   bool get canPlaceOrder =>
@@ -100,6 +107,18 @@ class CheckoutProvider extends ChangeNotifier {
     } finally {
       isLoadingAddresses = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadStoreConfig() async {
+    try {
+      final config = await _checkoutRepository.getStoreConfig();
+      deliveryFeeConfig = config.deliveryFee;
+      minDeliveryOrder = config.minDeliveryOrder;
+      loyaltyRate = config.loyaltyRate;
+      notifyListeners();
+    } catch (_) {
+      // Giữ mặc định FakeSeed nếu không đọc được /config/store.
     }
   }
 

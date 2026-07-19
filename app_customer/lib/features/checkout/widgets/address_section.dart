@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../data/fake_seed.dart';
 import '../providers/checkout_provider.dart';
 import 'section_card.dart';
 
@@ -55,7 +54,7 @@ class AddressSection extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Đơn giao hàng tối thiểu '
-                      '${FakeSeed.minDeliveryOrder.toVnd}. '
+                      '${provider.minDeliveryOrder.toVnd}. '
                       'Bạn thêm món nhé!',
                       style: AppTypography.bodySmall
                           .copyWith(color: AppColors.textPrimary),

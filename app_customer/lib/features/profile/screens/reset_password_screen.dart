@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../data/app_session.dart';
+import '../../../data/session.dart';
 import '../../../data/profile_repository.dart';
 import '../providers/profile_provider.dart';
 
@@ -18,7 +18,10 @@ class ResetPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ProfileProvider(context.read<ProfileRepository>()),
+      create: (context) => ProfileProvider(
+        context.read<ProfileRepository>(),
+        context.read<CurrentSession>(),
+      ),
       child: const _ResetPasswordView(),
     );
   }
@@ -34,7 +37,8 @@ class _ResetPasswordView extends StatefulWidget {
 class _ResetPasswordViewState extends State<_ResetPasswordView> {
   final _formKey = GlobalKey<FormState>();
   // Prefill email của phiên demo.
-  final _emailController = TextEditingController(text: AppSession.email);
+  late final _emailController =
+      TextEditingController(text: context.read<CurrentSession>().email);
   bool _sent = false;
 
   @override

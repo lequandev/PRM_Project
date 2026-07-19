@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../providers/address_provider.dart';
 
 /// AddressesScreen — UC-05: danh sách địa chỉ đã lưu.
@@ -14,7 +15,10 @@ class AddressesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-          AddressProvider(context.read<ProfileRepository>())..loadAddresses(),
+          AddressProvider(
+        context.read<ProfileRepository>(),
+        context.read<CurrentSession>(),
+      )..loadAddresses(),
       child: const _AddressesView(),
     );
   }
