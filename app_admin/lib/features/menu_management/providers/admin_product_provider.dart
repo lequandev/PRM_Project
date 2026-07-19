@@ -47,8 +47,13 @@ class AdminProductProvider extends ChangeNotifier {
   }
 
   AdminProductProvider() {
-    loadProducts();
-    loadCategories();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    await loadCategories();
+    await loadProducts();
+    await _correctProductCategories();
   }
 
   // ─── Load ─────────────────────────────────────────────────────────────────
@@ -85,6 +90,74 @@ class AdminProductProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       AppLogger.error('AdminProductProvider.loadCategories: $e');
+    }
+  }
+
+  // ─── Tự động sửa lỗi dữ liệu danh mục sản phẩm trên Firestore ──────────────
+
+  Future<void> _correctProductCategories() async {
+    if (_categories.isEmpty || _products.isEmpty) return;
+
+    final cafeCat = _categories.firstWhere((c) => c.name.toLowerCase().contains('cà phê'), orElse: () => _categories[0]);
+    final teaCat = _categories.firstWhere((c) => c.name.toLowerCase().contains('trà') || c.name.toLowerCase().contains('nước'), orElse: () => _categories[0]);
+    final cakeCat = _categories.firstWhere((c) => c.name.toLowerCase().contains('bánh') || c.name.toLowerCase().contains('snack') || c.name.toLowerCase().contains('tráng miệng'), orElse: () => _categories[0]);
+    final iceCat = _categories.firstWhere((c) => c.name.toLowerCase().contains('đá xay') || c.name.toLowerCase().contains('blended'), orElse: () => _categories[0]);
+    final specialCat = _categories.firstWhere((c) => c.name.toLowerCase().contains('đặc biệt') || c.name.toLowerCase().contains('khác'), orElse: () => _categories[0]);
+
+    bool hasUpdates = false;
+
+    for (final p in _products) {
+      String targetCatId = p.categoryId;
+      final nameLower = p.name.toLowerCase();
+
+      // Check "Đá xay" first to prevent blended drinks from leaking into Tea or Cakes
+      if (nameLower.contains('đá xay') || nameLower.contains('blended')) {
+        targetCatId = iceCat.id;
+      } else if (nameLower.contains('americano') ||
+          nameLower.contains('bạc sỉu') ||
+          nameLower.contains('cà phê') ||
+          nameLower.contains('cappuccino') ||
+          nameLower.contains('espresso')) {
+        targetCatId = cafeCat.id;
+      } else if (nameLower.contains('trà') ||
+          nameLower.contains('nước ép') ||
+          nameLower.contains('matcha') ||
+          nameLower.contains('sinh tố') ||
+          nameLower.contains('juice') ||
+          nameLower.contains('tea')) {
+        targetCatId = teaCat.id;
+      } else if (nameLower.contains('bánh') ||
+          nameLower.contains('croissant') ||
+          nameLower.contains('cookie') ||
+          nameLower.contains('hạt') ||
+          nameLower.contains('snack') ||
+          nameLower.contains('hướng dương')) {
+        targetCatId = cakeCat.id;
+      } else if (nameLower.contains('combo') ||
+          nameLower.contains('ly sứ') ||
+          nameLower.contains('đặc biệt')) {
+        targetCatId = specialCat.id;
+      }
+
+      final isCatValid = _categories.any((c) => c.id == p.categoryId);
+      if (!isCatValid || p.categoryId != targetCatId) {
+        try {
+          await _db.collection('products').doc(p.id).update({'categoryId': targetCatId});
+          AppLogger.info('Corrected category for ${p.name} -> $targetCatId');
+          hasUpdates = true;
+        } catch (e) {
+          AppLogger.error('Error correcting category for ${p.name}: $e');
+        }
+      }
+    }
+
+    if (hasUpdates) {
+      // Refresh local list
+      final snap = await _db.collection('products').orderBy('name').get();
+      _products = snap.docs
+          .map((doc) => ProductModel.fromFirestore(doc.data(), doc.id))
+          .toList();
+      notifyListeners();
     }
   }
 

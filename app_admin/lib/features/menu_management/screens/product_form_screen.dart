@@ -242,21 +242,28 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                             // Category
                             _FormField(
                               label: 'Danh mục *',
-                              child: DropdownButtonFormField<String>(
-                                initialValue: _selectedCategoryId.isEmpty
-                                    ? null
-                                    : _selectedCategoryId,
-                                hint: const Text('Chọn danh mục'),
-                                decoration: _inputDeco(hint: ''),
-                                items: provider.categories
-                                    .map((c) => DropdownMenuItem(
-                                          value: c.id,
-                                          child: Text(c.name),
-                                        ))
-                                    .toList(),
-                                onChanged: (v) =>
-                                    setState(() => _selectedCategoryId = v ?? ''),
-                                borderRadius: BorderRadius.circular(12),
+                              child: Builder(
+                                builder: (context) {
+                                  final hasCategory = provider.categories.any((c) => c.id == _selectedCategoryId);
+                                  final String? dropdownValue = hasCategory && _selectedCategoryId.isNotEmpty 
+                                      ? _selectedCategoryId 
+                                      : null;
+
+                                  return DropdownButtonFormField<String>(
+                                    initialValue: dropdownValue,
+                                    hint: const Text('Chọn danh mục'),
+                                    decoration: _inputDeco(hint: ''),
+                                    items: provider.categories
+                                        .map((c) => DropdownMenuItem(
+                                              value: c.id,
+                                              child: Text(c.name),
+                                            ))
+                                        .toList(),
+                                    onChanged: (v) =>
+                                        setState(() => _selectedCategoryId = v ?? ''),
+                                    borderRadius: BorderRadius.circular(12),
+                                  );
+                                }
                               ),
                             ),
 
