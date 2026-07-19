@@ -549,15 +549,15 @@ class _MenuGroup extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         clipBehavior: Clip.antiAlias,
         child: Column(
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            if (i > 0)
-              const Divider(
-                  height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md,
-                  color: AppColors.borderLight),
-            children[i],
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0)
+                const Divider(
+                    height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md,
+                    color: AppColors.borderLight),
+              children[i],
+            ],
           ],
-        ],
         ),
       ),
     );

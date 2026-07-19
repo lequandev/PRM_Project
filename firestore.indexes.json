@@ -1,6 +1,16 @@
 {
   "indexes": [
     {
+      "collectionGroup": "categories",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "displayOrder", "order": "ASCENDING" },
+        { "fieldPath": "__name__", "order": "ASCENDING" }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
       "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [

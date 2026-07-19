@@ -32,26 +32,42 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
     initialLocation: '/menu',
     refreshListenable: authProvider,
     redirect: (context, state) {
+      if (state.matchedLocation == '/') {
+        if (authProvider == null) return '/menu';
+        final isLoggedIn = authProvider.currentUser != null;
+        return isLoggedIn ? '/menu' : '/login';
+      }
+
       if (authProvider == null) return null; // DEMO MODE — không chặn route
 
       final isLoggedIn = authProvider.currentUser != null;
       final isAuthRoute = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password';
 
       if (!isLoggedIn && !isAuthRoute) {
         return '/login';
       }
-      if (isLoggedIn && isAuthRoute) {
+      if (isLoggedIn &&
+          isAuthRoute &&
+          state.matchedLocation != '/forgot-password') {
         return '/menu';
       }
       return null;
     },
     routes: [
-      // Alias an toàn — code cũ còn go('/') hoặc go('/home') thì về menu
-      // thay vì văng GoException "Page Not Found".
-      GoRoute(path: '/', redirect: (_, __) => '/menu'),
+      // Alias an toàn: '/' theo bản auth-aware của Dev 1 (main), '/home' giữ
+      // cho code cũ — cả hai về menu/login thay vì văng "Page Not Found".
+      GoRoute(
+        path: '/',
+        parentNavigatorKey: _rootNavigatorKey,
+        redirect: (context, state) {
+          if (authProvider == null) return '/menu';
+          final isLoggedIn = authProvider.currentUser != null;
+          return isLoggedIn ? '/menu' : '/login';
+        },
+      ),
       GoRoute(path: '/home', redirect: (_, __) => '/menu'),
-
       GoRoute(
         path: '/login',
         parentNavigatorKey: _rootNavigatorKey,
@@ -61,6 +77,12 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
         path: '/register',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        // UC-03 từ màn login (chưa đăng nhập) — redirect cho phép ở trên
+        path: '/forgot-password',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
 
       // ── Dev 3: full-screen routes (đè lên bottom nav) ──

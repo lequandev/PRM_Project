@@ -7,64 +7,64 @@ import 'package:flutter/material.dart';
 abstract class AppColors {
 
   // ════════════════════════════════════════════════════════
-  // 1. NHÓM MÀU THƯƠNG HIỆU (Brand & Accent Colors)
+  // 1. NHÓM MÀU THƯƠNG HIỆU (Brand & Accent Colors - Soft Academic Palette)
   // ════════════════════════════════════════════════════════
 
-  /// Vàng Hoàng Kim — #D4A017
-  /// Dùng cho: nút Add to Cart, Bottom Bar active, icon danh mục, nhãn quan trọng
-  static const Color goldPrimary = Color(0xFFD4A017);
+  /// Vàng Cổ Điển (Soft Academic Antique Gold) — #A67C1E
+  /// Đã hạ bão hòa để giảm mỏi mắt, tăng tính chuyên nghiệp học thuật.
+  static const Color goldPrimary = Color(0xFFA67C1E);
 
-  /// Vàng Sáng — #F6D365
-  /// Dùng cho: gradient Banner quảng cáo (kết hợp với goldPrimary)
-  static const Color goldLight = Color(0xFFF6D365);
+  /// Vàng Giấy Cũ (Scholarly Gold Parchment) — #DEC58A
+  /// Hài hòa làm màu sáng cho gradient và highlight.
+  static const Color goldLight = Color(0xFFDEC58A);
 
-  /// Nâu Cà Phê Trầm — #5A3E2B
-  /// Đặc trưng của hạt cà phê rang xay, dùng cho AppBar, heading chính
-  static const Color brownAccent = Color(0xFF5A3E2B);
+  /// Nâu Gỗ Mahogany (Dark Library Mahogany) — #452D1E
+  /// Màu gỗ thư viện tối sẫm, mang cảm giác yên tĩnh và tập trung.
+  static const Color brownAccent = Color(0xFF452D1E);
 
-  /// Kem Ấm — #F8F3EA
-  /// Dùng cho: nền Custom AppBar, khu vực ưu đãi đặc biệt
-  static const Color beigeWarm = Color(0xFFF8F3EA);
+  /// Kem Giấy Sách (Warm Book Paper) — #F4ECE1
+  /// Hạn chế tối đa ánh sáng xanh, lý tưởng khi chấm bài ca đêm.
+  static const Color beigeWarm = Color(0xFFF4ECE1);
 
-  /// Kem Ấm Sáng — #FFF8EE
-  /// Biến thể sáng hơn của beigeWarm, dùng cho highlight nhẹ
-  static const Color beigeLight = Color(0xFFFFF8EE);
+  /// Kem Ấm Sáng (Soft Warm Ivory) — #FAF5ED
+  /// Highlight nền rất nhẹ nhàng.
+  static const Color beigeLight = Color(0xFFFAF5ED);
 
   // ════════════════════════════════════════════════════════
   // 2. NHÓM MÀU NỀN & KHỐI (Background & Canvas)
   // ════════════════════════════════════════════════════════
 
-  /// Nền Chính — #FAFAFA
-  /// Nền tổng thể ứng dụng — xám-trắng sạch, Modern UI
-  static const Color backgroundLight = Color(0xFFFAFAFA);
+  /// Nền Chính (Parchment White) — #FAF7F2
+  /// Nền tổng thể êm dịu, giảm lóa mắt.
+  static const Color backgroundLight = Color(0xFFFAF7F2);
 
-  /// Nền Phụ — #F8F8F8
-  /// Biến thể nền phụ cho các section thứ cấp
-  static const Color backgroundAlt = Color(0xFFF8F8F8);
+  /// Nền Phụ (Muted Desk Oak) — #F2ECE0
+  /// Tạo độ sâu phân cấp layout nhẹ nhàng.
+  static const Color backgroundAlt = Color(0xFFF2ECE0);
 
   /// Nền Thẻ — #FFFFFF
-  /// Card product, danh mục — trắng tinh khiết nổi bật trên nền xám
+  /// Trắng nguyên bản để giữ độ tương phản cao cho nội dung.
   static const Color cardBackground = Color(0xFFFFFFFF);
 
-  /// Đường Viền — #ECECEC
-  /// Phân tách các khu vực layout một cách tinh tế
-  static const Color borderLight = Color(0xFFECECEC);
+  /// Đường Viền Giấy — #E5DEC9
+  /// Phân tách tinh tế, tiệp tông màu học thuật.
+  static const Color borderLight = Color(0xFFE5DEC9);
 
   // ════════════════════════════════════════════════════════
-  // 3. NHÓM MÀU CHỮ (Typography)
+  // 3. NHÓM MÀU CHỮ (Typography - WCAG AAA Compliant)
   // ════════════════════════════════════════════════════════
 
-  /// Chữ Chính — #1C1C1C
-  /// Tiêu đề, tên sản phẩm — độ tương phản tối ưu
-  static const Color textPrimary = Color(0xFF1C1C1C);
+  /// Chữ Chính (Ebony Ink) — #161616
+  /// Tương phản cực cao cho chữ nhỏ hoặc đọc lướt.
+  static const Color textPrimary = Color(0xFF161616);
 
-  /// Chữ Phụ — #6B6B6B
-  /// Mô tả ngắn, giá cả, chú thích phụ
-  static const Color textSecondary = Color(0xFF6B6B6B);
+  /// Chữ Phụ (Dark Graphite) — #474747
+  /// Vẫn đảm bảo độ tương phản AAA đối với nền kem/trắng.
+  static const Color textSecondary = Color(0xFF474747);
 
-  /// Chữ Nhạt / Hint — #9E9E9E
-  /// Placeholder tìm kiếm, icon chưa active
-  static const Color textHint = Color(0xFF9E9E9E);
+  /// Chữ Nhạt / Hint — #767676
+  /// Đảm bảo tối thiểu tỷ lệ tương phản 4.5:1.
+  static const Color textHint = Color(0xFF767676);
 
   /// Chữ trên nền tối (Primary button, AppBar)
   static const Color textOnDark = Color(0xFFFFFFFF);
