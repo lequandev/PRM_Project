@@ -1,10 +1,10 @@
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../data/app_session.dart';
 import '../../../data/checkout_repository.dart';
 import '../../../data/fake_seed.dart';
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../../cart/providers/cart_provider.dart';
 
 /// CheckoutProvider — state cho màn thanh toán (UC-13 → UC-17).
@@ -21,9 +21,11 @@ class CheckoutProvider extends ChangeNotifier {
     required CheckoutRepository checkoutRepository,
     required ProfileRepository profileRepository,
     required CartProvider cart,
+    required CurrentSession session,
   })  : _checkoutRepository = checkoutRepository,
         _profileRepository = profileRepository,
-        _cart = cart {
+        _cart = cart,
+        _session = session {
     // Giỏ hàng đổi (Dev 2 thêm/bớt món) → tiền phải tính lại.
     _cart.addListener(_onCartChanged);
     loadAddresses();
@@ -32,6 +34,7 @@ class CheckoutProvider extends ChangeNotifier {
   final CheckoutRepository _checkoutRepository;
   final ProfileRepository _profileRepository;
   final CartProvider _cart;
+  final CurrentSession _session;
 
   // ─── State ────────────────────────────────────────────────
 
@@ -87,7 +90,7 @@ class CheckoutProvider extends ChangeNotifier {
     isLoadingAddresses = true;
     notifyListeners();
     try {
-      addresses = await _profileRepository.getAddresses(AppSession.uid);
+      addresses = await _profileRepository.getAddresses(_session.uid);
       if (selectedAddress == null && addresses.isNotEmpty) {
         selectedAddress = addresses.firstWhere(
           (a) => a.isDefault,
@@ -136,7 +139,7 @@ class CheckoutProvider extends ChangeNotifier {
       voucher = await _checkoutRepository.validateVoucher(
         code: code,
         orderTotal: subtotal,
-        userId: AppSession.uid,
+        userId: _session.uid,
       );
       voucherError = null;
     } on VoucherException catch (e) {
@@ -166,9 +169,9 @@ class CheckoutProvider extends ChangeNotifier {
       final trimmedNote = note.trim();
       final order = OrderModel(
         id: '', // repository sinh id thật khi tạo đơn
-        customerId: AppSession.uid,
-        customerName: AppSession.name,
-        customerPhone: AppSession.phone,
+        customerId: _session.uid,
+        customerName: _session.name,
+        customerPhone: _session.phone,
         items: List.of(_cart.items),
         subtotal: subtotal,
         discountAmount: discount,

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../data/checkout_repository.dart';
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/checkout_provider.dart';
 import '../widgets/address_section.dart';
@@ -25,6 +26,7 @@ class CheckoutScreen extends StatelessWidget {
         checkoutRepository: context.read<CheckoutRepository>(),
         profileRepository: context.read<ProfileRepository>(),
         cart: context.read<CartProvider>(),
+        session: context.read<CurrentSession>(),
       ),
       child: const _CheckoutView(),
     );

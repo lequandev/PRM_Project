@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/common/app_exception.dart';
 import '../models/product/product_model.dart';
 import '../models/product/category_model.dart';
 import '../models/product/review_model.dart';
@@ -62,9 +63,16 @@ class ProductService {
   // ─── Reviews ───────────────────────────────────────────
   // Dev 3 (submit UC-39), Dev 5 (moderate UC-40)
 
-  Future<void> submitReview({required String productId, required ReviewModel review}) {
-    // TODO: Dev 1 implements khi Dev 3 cần (UC-39)
-    throw UnimplementedError('ProductService.submitReview — chưa implement');
+  Future<void> submitReview({required String productId, required ReviewModel review}) async {
+    try {
+      await _db
+          .collection('products')
+          .doc(productId)
+          .collection('reviews')
+          .add(ReviewModel.toFirestore(review));
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   Future<List<ReviewModel>> getPendingReviews(String productId) {

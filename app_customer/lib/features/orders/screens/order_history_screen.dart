@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/order_repository.dart';
+import '../../../data/session.dart';
 import '../providers/order_history_provider.dart';
 import '../widgets/review_sheet.dart';
 import '../widgets/status_chip.dart';
@@ -16,7 +17,10 @@ class OrderHistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-          OrderHistoryProvider(context.read<OrderRepository>()),
+          OrderHistoryProvider(
+        context.read<OrderRepository>(),
+        context.read<CurrentSession>(),
+      ),
       child: const _OrderHistoryView(),
     );
   }

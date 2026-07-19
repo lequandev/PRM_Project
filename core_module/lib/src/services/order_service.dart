@@ -18,25 +18,47 @@ class OrderService {
   // ─── UC-17: Đặt hàng xác nhận ─────────────────────────
   // Dev 3 dùng — CheckoutProvider
 
-  Future<OrderModel> createOrder(OrderModel order) {
-    // TODO: Dev 1 implements khi Dev 3 cần (UC-17)
-    throw UnimplementedError('OrderService.createOrder — chưa implement');
+  Future<OrderModel> createOrder(OrderModel order) async {
+    try {
+      final ref =
+          await _db.collection('orders').add(OrderModel.toFirestore(order));
+      final doc = await ref.get();
+      return OrderModel.fromFirestore(doc.data()!, doc.id);
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   // ─── UC-18: Xem lịch sử đơn hàng ──────────────────────
   // Dev 3 dùng — OrderHistoryProvider
 
-  Future<List<OrderModel>> getOrdersByCustomer(String customerId) {
-    // TODO: Dev 1 implements khi Dev 3 cần (UC-18)
-    throw UnimplementedError('OrderService.getOrdersByCustomer — chưa implement');
+  Future<List<OrderModel>> getOrdersByCustomer(String customerId) async {
+    try {
+      // Cần composite index: orders(customerId ASC, createdAt DESC)
+      // — đã khai báo trong firestore.indexes.json ở root repo.
+      final snap = await _db
+          .collection('orders')
+          .where('customerId', isEqualTo: customerId)
+          .orderBy('createdAt', descending: true)
+          .get();
+      return snap.docs
+          .map((doc) => OrderModel.fromFirestore(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   // ─── UC-19: Theo dõi realtime ─────────────────────────
   // Dev 3 dùng — OrderTrackingProvider
 
   Stream<OrderModel> watchOrder(String orderId) {
-    // TODO: Dev 1 implements khi Dev 3 cần (UC-19)
-    throw UnimplementedError('OrderService.watchOrder — chưa implement');
+    return _db.collection('orders').doc(orderId).snapshots().map((doc) {
+      if (!doc.exists || doc.data() == null) {
+        throw DatabaseException.notFound('Đơn hàng');
+      }
+      return OrderModel.fromFirestore(doc.data()!, doc.id);
+    });
   }
 
   // ─── UC-20: Hàng đợi Staff (realtime) ─────────────────
