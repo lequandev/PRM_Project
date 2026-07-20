@@ -311,7 +311,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 2,
                     children: [
                       Text(
                         'Tồn kho: ${item.currentStock} ${item.unit}',
@@ -320,7 +323,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           fontWeight: item.isOutOfStock ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Text(
                         '(Tối thiểu: ${item.minStock} ${item.unit})',
                         style: AppTypography.bodySmall,
