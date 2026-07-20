@@ -412,8 +412,15 @@ Future<void> _seedMockData() async {
 
 // ─── App Root ─────────────────────────────────────────────────────────────────
 
-class AdminApp extends StatelessWidget {
+class AdminApp extends StatefulWidget {
   const AdminApp({super.key});
+
+  @override
+  State<AdminApp> createState() => _AdminAppState();
+}
+
+class _AdminAppState extends State<AdminApp> {
+  bool _showSplash = true;
 
   @override
   Widget build(BuildContext context) {
@@ -429,7 +436,17 @@ class AdminApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
       ],
       // Dùng Consumer + cached router để tránh Duplicate GlobalKey
-      child: _AdminRouterApp(),
+      child: _showSplash
+          ? MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.admin,
+              home: AnimatedSplashScreen(
+                onFinished: () {
+                  if (mounted) setState(() => _showSplash = false);
+                },
+              ),
+            )
+          : const _AdminRouterApp(),
     );
   }
 }

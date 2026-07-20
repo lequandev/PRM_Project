@@ -18,6 +18,11 @@ class StaffInventoryProvider extends ChangeNotifier {
     _startWatchingInventory();
   }
 
+  void reload() {
+    _subscription?.cancel();
+    _startWatchingInventory();
+  }
+
   void _startWatchingInventory() {
     _isLoading = true;
     _errorMessage = null;

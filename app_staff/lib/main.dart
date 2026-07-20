@@ -94,8 +94,15 @@ Future<void> _seedUser(String email, String password, String name) async {
   }
 }
 
-class StaffApp extends StatelessWidget {
+class StaffApp extends StatefulWidget {
   const StaffApp({super.key});
+
+  @override
+  State<StaffApp> createState() => _StaffAppState();
+}
+
+class _StaffAppState extends State<StaffApp> {
+  bool _showSplash = true;
 
   @override
   Widget build(BuildContext context) {
@@ -105,12 +112,22 @@ class StaffApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => StaffOrderProvider()),
         ChangeNotifierProvider(create: (_) => StaffInventoryProvider()),
       ],
-      child: MaterialApp.router(
-        title: 'Coffee Shop — Nhân viên',
-        theme: AppTheme.staff,
-        routerConfig: appRouter,
-        debugShowCheckedModeBanner: false,
-      ),
+      child: _showSplash
+          ? MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.staff,
+              home: AnimatedSplashScreen(
+                onFinished: () {
+                  if (mounted) setState(() => _showSplash = false);
+                },
+              ),
+            )
+          : MaterialApp.router(
+              title: 'Coffee Shop — Nhân viên',
+              theme: AppTheme.staff,
+              routerConfig: appRouter,
+              debugShowCheckedModeBanner: false,
+            ),
     );
   }
 }

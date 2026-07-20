@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 
 /// InventoryProvider — Quản lý kho nguyên liệu (UC-34 UI, UC-35 Admin).
@@ -9,6 +11,9 @@ class InventoryProvider extends ChangeNotifier {
   List<IngredientModel> _ingredients = [];
   bool _isLoading = false;
   String? _errorMessage;
+  
+  StreamSubscription? _inventorySub;
+  StreamSubscription? _authSub;
 
   List<IngredientModel> get ingredients => _ingredients;
   bool get isLoading => _isLoading;
@@ -19,14 +24,32 @@ class InventoryProvider extends ChangeNotifier {
   int get lowStockCount => lowStockItems.length;
 
   InventoryProvider() {
-    _loadAndWatch();
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        _loadAndWatch();
+      } else {
+        _inventorySub?.cancel();
+        _inventorySub = null;
+        _ingredients = [];
+        notifyListeners();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _inventorySub?.cancel();
+    _authSub?.cancel();
+    super.dispose();
   }
 
   void _loadAndWatch() {
+    if (_inventorySub != null) return; // Already listening
+
     _isLoading = true;
     notifyListeners();
 
-    _service.watchInventory().listen(
+    _inventorySub = _service.watchInventory().listen(
       (list) {
         _ingredients = list;
         _isLoading = false;

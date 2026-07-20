@@ -15,8 +15,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) =>
-          ProfileProvider(
+      create: (context) => ProfileProvider(
         context.read<ProfileRepository>(),
         context.read<CurrentSession>(),
       )..loadProfile(),
@@ -117,8 +116,10 @@ class _ProfileContent extends StatelessWidget {
         _MenuGroup(
           children: [
             ListTile(
-              leading: const Icon(Icons.delete_forever_outlined,
-                  color: AppColors.error),
+              leading: const Icon(
+                Icons.delete_forever_outlined,
+                color: AppColors.error,
+              ),
               title: Text(
                 'Xóa tài khoản',
                 style: AppTypography.bodyLarge.copyWith(
@@ -128,19 +129,15 @@ class _ProfileContent extends StatelessWidget {
               ),
               subtitle: Text(
                 'Vô hiệu hóa tài khoản và dữ liệu cá nhân',
-                style:
-                    AppTypography.caption.copyWith(color: AppColors.textHint),
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textHint,
+                ),
               ),
               onTap: () => _startDeleteFlow(context),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.lg),
-        Text(
-          'Phiên demo — đăng nhập thật sẽ hoạt động khi tích hợp Firebase.',
-          textAlign: TextAlign.center,
-          style: AppTypography.caption.copyWith(color: AppColors.textHint),
-        ),
         const SizedBox(height: AppSpacing.lg),
       ],
     );
@@ -180,8 +177,9 @@ class _ProfileContent extends StatelessWidget {
           '• Thông tin cá nhân (tên, SĐT, địa chỉ) sẽ bị ẩn khỏi hệ thống.\n'
           '• Lịch sử đơn hàng được giữ ẩn danh cho mục đích kế toán.\n\n'
           'Hành động này không thể hoàn tác.',
-          style: AppTypography.bodyMedium
-              .copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
@@ -202,8 +200,7 @@ class _ProfileContent extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) =>
-          _TypeToConfirmDialog(provider: provider),
+      builder: (dialogContext) => _TypeToConfirmDialog(provider: provider),
     );
     if (confirmed != true || !context.mounted) return;
 
@@ -211,15 +208,19 @@ class _ProfileContent extends StatelessWidget {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.check_circle_rounded,
-            color: AppColors.success, size: 48),
+        icon: const Icon(
+          Icons.check_circle_rounded,
+          color: AppColors.success,
+          size: 48,
+        ),
         title: const Text('Đã vô hiệu hóa tài khoản'),
         content: Text(
           'Yêu cầu xóa tài khoản đã được ghi nhận. '
           '(Phiên demo: dữ liệu giả lập, không có gì bị xóa thật.)',
           textAlign: TextAlign.center,
-          style: AppTypography.bodyMedium
-              .copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
@@ -281,8 +282,9 @@ class _TypeToConfirmDialogState extends State<_TypeToConfirmDialog> {
         children: [
           Text(
             'Gõ chữ XOA vào ô bên dưới để xác nhận xóa tài khoản.',
-            style: AppTypography.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           TextField(
@@ -299,8 +301,9 @@ class _TypeToConfirmDialogState extends State<_TypeToConfirmDialog> {
       ),
       actions: [
         TextButton(
-          onPressed:
-              _processing ? null : () => Navigator.of(context).pop(false),
+          onPressed: _processing
+              ? null
+              : () => Navigator.of(context).pop(false),
           child: const Text('Hủy'),
         ),
         FilledButton(
@@ -314,7 +317,9 @@ class _TypeToConfirmDialogState extends State<_TypeToConfirmDialog> {
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.textOnDark),
+                    strokeWidth: 2,
+                    color: AppColors.textOnDark,
+                  ),
                 )
               : const Text('Xóa tài khoản'),
         ),
@@ -331,8 +336,9 @@ class _HeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial =
-        profile.name.trim().isEmpty ? '?' : profile.name.trim()[0].toUpperCase();
+    final initial = profile.name.trim().isEmpty
+        ? '?'
+        : profile.name.trim()[0].toUpperCase();
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -355,13 +361,17 @@ class _HeaderCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(profile.name,
-                    style: AppTypography.h3, overflow: TextOverflow.ellipsis),
+                Text(
+                  profile.name,
+                  style: AppTypography.h3,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   profile.email,
-                  style: AppTypography.bodySmall
-                      .copyWith(color: AppColors.textSecondary),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -455,12 +465,17 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
     final isSaving = context.watch<ProfileProvider>().isSaving;
     return Padding(
       // Đẩy sheet lên khi bàn phím mở.
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.lg),
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.lg,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -505,8 +520,9 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.goldPrimary,
                     foregroundColor: AppColors.textOnGold,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
@@ -553,8 +569,11 @@ class _MenuGroup extends StatelessWidget {
             for (var i = 0; i < children.length; i++) ...[
               if (i > 0)
                 const Divider(
-                    height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md,
-                    color: AppColors.borderLight),
+                  height: 1,
+                  indent: AppSpacing.md,
+                  endIndent: AppSpacing.md,
+                  color: AppColors.borderLight,
+                ),
               children[i],
             ],
           ],
@@ -580,8 +599,11 @@ class _MenuTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: AppColors.brownAccent),
       title: Text(title, style: AppTypography.bodyLarge),
-      trailing:
-          const Icon(Icons.chevron_right, color: AppColors.textHint, size: 20),
+      trailing: const Icon(
+        Icons.chevron_right,
+        color: AppColors.textHint,
+        size: 20,
+      ),
       onTap: onTap,
     );
   }
@@ -601,14 +623,18 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded,
-                size: 48, color: AppColors.textHint),
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 48,
+              color: AppColors.textHint,
+            ),
             const SizedBox(height: AppSpacing.md),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             OutlinedButton.icon(
