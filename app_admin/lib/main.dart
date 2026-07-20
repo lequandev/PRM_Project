@@ -30,7 +30,7 @@ void main() async {
     await _seedDefaultAdminUser();
 
     // Seed mock data nếu DB trống
-    await _seedMockData();
+    // await _seedMockData();
   } catch (e) {
     AppLogger.error('Lỗi khởi tạo Firebase: $e');
   }
@@ -86,6 +86,7 @@ Future<void> _seedAdminAccount(
 
 // ─── Seed Mock Data ───────────────────────────────────────────────────────────
 
+@pragma('vm:entry-point')
 Future<void> _seedMockData() async {
   try {
     final db = FirebaseFirestore.instance;
@@ -233,6 +234,176 @@ Future<void> _seedMockData() async {
         'loyaltyRate': 0.01,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+    }
+
+    // Cleanup legacy corrupt mock orders first to prevent parsing errors
+    final mockOrdersSnap = await db.collection('orders')
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: 'order_mock_')
+        .where(FieldPath.documentId, isLessThanOrEqualTo: 'order_mock_\uf8ff')
+        .get();
+    for (final doc in mockOrdersSnap.docs) {
+      try {
+        await doc.reference.delete();
+        AppLogger.info('Deleted corrupt legacy mock order: ${doc.id}');
+      } catch (e) {
+        AppLogger.error('Error deleting mock order ${doc.id}: $e');
+      }
+    }
+
+    // Seed Orders if there are no delivered orders (to draw the revenue charts)
+    final orderSnap = await db.collection('orders').where('status', isEqualTo: 'delivered').limit(1).get();
+    if (orderSnap.docs.isEmpty) {
+      AppLogger.info('=== SEED ORDERS ===');
+      final productsListSnap = await db.collection('products').get();
+      if (productsListSnap.docs.isNotEmpty) {
+        final prod1 = productsListSnap.docs[0];
+        final prod2 = productsListSnap.docs.length > 1 ? productsListSnap.docs[1] : prod1;
+        
+        final now = DateTime.now();
+        // Create 10 orders spread across the last 7 days
+        for (int i = 0; i < 10; i++) {
+          final orderDate = now.subtract(Duration(days: i, hours: i * 2));
+          final docId = 'order_mock_${now.millisecondsSinceEpoch}_$i'; // unique doc ID
+          
+          final price1 = (prod1.data()['basePrice'] as num?)?.toDouble() ?? 30000.0;
+          final price2 = (prod2.data()['basePrice'] as num?)?.toDouble() ?? 25000.0;
+          final qty1 = 2;
+          final qty2 = 1;
+          
+          final double subtotal = (price1 * qty1) + (i % 3 == 0 ? (price2 * qty2) : 0.0);
+          final double totalAmount = subtotal + 15000.0; // subtotal + 15k delivery fee
+          
+          await db.collection('orders').doc(docId).set({
+            'customerId': 'customer_test',
+            'customerName': i % 2 == 0 ? 'Nguyễn Trần Huy' : 'Lê Thị Mai',
+            'customerPhone': '0987654321',
+            'items': [
+              {
+                'productId': prod1.id,
+                'productName': prod1.data()['name'] ?? 'Cà phê',
+                'productImageUrl': prod1.data()['imageUrl'] as String?,
+                'quantity': qty1,
+                'unitPrice': price1,
+                'totalPrice': price1 * qty1,
+                'customizations': {},
+              },
+              if (i % 3 == 0)
+                {
+                  'productId': prod2.id,
+                  'productName': prod2.data()['name'] ?? 'Bánh ngọt',
+                  'productImageUrl': prod2.data()['imageUrl'] as String?,
+                  'quantity': qty2,
+                  'unitPrice': price2,
+                  'totalPrice': price2 * qty2,
+                  'customizations': {},
+                }
+            ],
+            'subtotal': subtotal,
+            'discountAmount': 0.0,
+            'totalAmount': totalAmount,
+            'status': i == 9 ? 'cancelled' : 'delivered', // 1 cancelled, others delivered
+            'orderType': 'delivery',
+            'paymentMethod': i % 2 == 0 ? 'cash' : 'momo',
+            'paymentStatus': 'paid',
+            'createdAt': Timestamp.fromDate(orderDate),
+            'updatedAt': Timestamp.fromDate(orderDate),
+          });
+        }
+      }
+    }
+
+    // Seed Reviews subcollection using fixed document IDs to prevent duplication
+    final productsListSnapForReview = await db.collection('products').get();
+    if (productsListSnapForReview.docs.isNotEmpty) {
+      final targetProductDoc = productsListSnapForReview.docs.first;
+      
+      // Clean up any legacy random mock reviews first
+      final mockUserIds = ['user_rv1', 'user_rv2', 'user_rv3'];
+      final existingReviewsSnap = await targetProductDoc.reference.collection('reviews')
+          .where('userId', whereIn: mockUserIds)
+          .get();
+      for (final doc in existingReviewsSnap.docs) {
+        try {
+          await doc.reference.delete();
+        } catch (e) {
+          AppLogger.error('Error cleaning up review ${doc.id}: $e');
+        }
+      }
+
+      AppLogger.info('=== SEED REVIEWS (FIXED IDS) ===');
+      final mockReviews = {
+        'review_mock_1': {
+          'userId': 'user_rv1',
+          'userName': 'Hoàng Nam',
+          'rating': 5.0,
+          'comment': 'Đồ uống rất ngon, đậm đà vị cà phê truyền thống. Nhân viên thân thiện!',
+          'status': 'pending', // pending review
+          'createdAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 2))),
+        },
+        'review_mock_2': {
+          'userId': 'user_rv2',
+          'userName': 'Minh Thư',
+          'rating': 4.0,
+          'comment': 'Bánh croissant giòn tan nhưng nước hơi ngọt quá, giảm đường sẽ ngon hơn.',
+          'status': 'pending', // pending review
+          'createdAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 5))),
+        },
+        'review_mock_3': {
+          'userId': 'user_rv3',
+          'userName': 'Khánh Vy',
+          'rating': 5.0,
+          'comment': 'Không gian đẹp, giao hàng siêu nhanh. Sẽ đặt lại thường xuyên.',
+          'status': 'approved', // approved review
+          'createdAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 2))),
+        }
+      };
+      
+      for (final entry in mockReviews.entries) {
+        await targetProductDoc.reference.collection('reviews').doc(entry.key).set(entry.value);
+      }
+    }
+
+    // Seed Ingredients if collection is empty
+    final ingSnap = await db.collection('ingredients').limit(1).get();
+    if (ingSnap.docs.isEmpty) {
+      AppLogger.info('=== SEED INGREDIENTS ===');
+      final ingredients = [
+        {
+          'name': 'Hạt cà phê Robusta',
+          'quantity': 4.5, // 4.5 kg - low stock alert
+          'unit': 'kg',
+          'minThreshold': 10.0, // Alert threshold
+          'supplier': 'Nông trại Buôn Ma Thuột',
+          'lastImportedAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 10))),
+        },
+        {
+          'name': 'Sữa đặc Ông Thọ',
+          'quantity': 24.0, // 24 cans - plenty
+          'unit': 'lon',
+          'minThreshold': 12.0,
+          'supplier': 'Vinamilk Việt Nam',
+          'lastImportedAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 3))),
+        },
+        {
+          'name': 'Bột Matcha Uji',
+          'quantity': 0.8, // 0.8 kg - low stock alert
+          'unit': 'kg',
+          'minThreshold': 2.0,
+          'supplier': 'Uji Matcha Importers',
+          'lastImportedAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 15))),
+        },
+        {
+          'name': 'Cam tươi sành',
+          'quantity': 15.0, // 15 kg - plenty
+          'unit': 'kg',
+          'minThreshold': 5.0,
+          'supplier': 'Chợ đầu mối Long Biên',
+          'lastImportedAt': Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 1))),
+        }
+      ];
+      for (final ing in ingredients) {
+        await db.collection('ingredients').add(ing);
+      }
     }
   } catch (e) {
     AppLogger.error('Lỗi seed mock data: $e');

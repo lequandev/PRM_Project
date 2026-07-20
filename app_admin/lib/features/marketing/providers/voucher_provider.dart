@@ -97,6 +97,50 @@ class VoucherProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateVoucher(VoucherModel voucher) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _db
+          .collection('vouchers')
+          .doc(voucher.code.toUpperCase())
+          .update(VoucherModel.toFirestore(voucher));
+      final idx = _vouchers.indexWhere((v) => v.code == voucher.code);
+      if (idx != -1) {
+        _vouchers[idx] = voucher;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Lỗi cập nhật voucher: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteVoucher(String code) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _db.collection('vouchers').doc(code.toUpperCase()).delete();
+      _vouchers.removeWhere((v) => v.code == code);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Lỗi xóa voucher: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   void clearError() {
     _errorMessage = null;
     notifyListeners();

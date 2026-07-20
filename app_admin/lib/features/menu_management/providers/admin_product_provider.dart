@@ -129,6 +129,11 @@ class AdminProductProvider extends ChangeNotifier {
       } else if (nameLower.contains('bánh') ||
           nameLower.contains('croissant') ||
           nameLower.contains('cookie') ||
+          nameLower.contains('tiramisu') ||
+          nameLower.contains('mousse') ||
+          nameLower.contains('pudding') ||
+          nameLower.contains('cheesecake') ||
+          nameLower.contains('cake') ||
           nameLower.contains('hạt') ||
           nameLower.contains('snack') ||
           nameLower.contains('hướng dương')) {
@@ -139,11 +144,11 @@ class AdminProductProvider extends ChangeNotifier {
         targetCatId = specialCat.id;
       }
 
-      final isCatValid = _categories.any((c) => c.id == p.categoryId);
-      if (!isCatValid || p.categoryId != targetCatId) {
+      final isCatValid = p.categoryId.isNotEmpty && _categories.any((c) => c.id == p.categoryId);
+      if (!isCatValid) {
         try {
           await _db.collection('products').doc(p.id).update({'categoryId': targetCatId});
-          AppLogger.info('Corrected category for ${p.name} -> $targetCatId');
+          AppLogger.info('Corrected invalid/missing category for ${p.name} -> $targetCatId');
           hasUpdates = true;
         } catch (e) {
           AppLogger.error('Error correcting category for ${p.name}: $e');

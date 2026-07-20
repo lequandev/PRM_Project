@@ -13,14 +13,18 @@ class ReviewProvider extends ChangeNotifier {
   List<ReviewWithProduct> get reviews => _reviews;
   List<ReviewWithProduct> get pendingReviews =>
       _reviews.where((r) => r.review.status == 'pending').toList();
+  List<ReviewWithProduct> get approvedReviews =>
+      _reviews.where((r) => r.review.status == 'approved').toList();
+  List<ReviewWithProduct> get rejectedReviews =>
+      _reviews.where((r) => r.review.status == 'rejected').toList();
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
   ReviewProvider() {
-    loadPendingReviews();
+    loadAllReviews();
   }
 
-  Future<void> loadPendingReviews() async {
+  Future<void> loadAllReviews() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -33,7 +37,6 @@ class ReviewProvider extends ChangeNotifier {
       for (final doc in productsSnap.docs) {
         futures.add(doc.reference
             .collection('reviews')
-            .where('status', isEqualTo: 'pending')
             .get());
       }
 
@@ -68,7 +71,7 @@ class ReviewProvider extends ChangeNotifier {
       });
     } catch (e) {
       _errorMessage = 'Lỗi tải đánh giá: $e';
-      AppLogger.error('ReviewProvider.loadPendingReviews: $e');
+      AppLogger.error('ReviewProvider.loadAllReviews: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -93,9 +96,7 @@ class ReviewProvider extends ChangeNotifier {
           .doc(reviewId)
           .update({'status': status});
 
-      _reviews.removeWhere(
-          (r) => r.review.id == reviewId && r.productId == productId);
-      notifyListeners();
+      await loadAllReviews();
       return true;
     } catch (e) {
       _errorMessage = 'Lỗi cập nhật đánh giá: $e';

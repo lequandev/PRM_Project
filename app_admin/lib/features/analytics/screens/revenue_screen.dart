@@ -110,13 +110,22 @@ class RevenueScreen extends StatelessWidget {
                       icon: Icons.payments_rounded,
                       color: AppColors.goldPrimary,
                     )),
-                    SizedBox(width: cardW, child: StatCard(
-                      title: 'Đơn hàng',
-                      value: provider.totalOrders.toString(),
-                      subtitle: '${provider.deliveredOrders} hoàn thành',
-                      icon: Icons.receipt_long_rounded,
-                      color: AppColors.success,
-                    )),
+                     SizedBox(
+                      width: cardW,
+                      child: GestureDetector(
+                        onTap: () => _showOrdersDetailDialog(context, provider.orders),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: StatCard(
+                            title: 'Đơn hàng',
+                            value: provider.totalOrders.toString(),
+                            subtitle: '${provider.deliveredOrders} hoàn thành (Bấm để xem)',
+                            icon: Icons.receipt_long_rounded,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ),
+                    ),
                     SizedBox(width: cardW, child: StatCard(
                       title: 'Giá trị trung bình',
                       value: fmt.format(provider.avgOrderValue),
@@ -310,5 +319,184 @@ class _PresetButton extends StatelessWidget {
       ),
     );
   }
+}
+
+// ─── Dialog hiển thị chi tiết danh sách đơn hàng ──────────────────────────────
+
+void _showOrdersDetailDialog(BuildContext context, List<OrderModel> orders) {
+  final fmt = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+  final dtFmt = DateFormat('dd/MM/yyyy HH:mm');
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      final screenW = MediaQuery.of(context).size.width;
+      
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.white,
+        child: Container(
+          width: screenW * 0.9, // 90% of screen width on mobile, capped at maxWidth
+          constraints: BoxConstraints(
+            maxWidth: 650,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dialog Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Chi tiết đơn hàng',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brownAccent,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Orders list
+              Expanded(
+                child: orders.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Không có đơn hàng nào',
+                          style: TextStyle(color: AppColors.textHint),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: orders.length,
+                        separatorBuilder: (context, index) => const Divider(height: 20, color: AppColors.borderLight),
+                        itemBuilder: (context, index) {
+                          final o = orders[index];
+                          
+                          Color statusColor = AppColors.success;
+                          String statusLabel = 'Đã giao';
+                          if (o.status == 'cancelled') {
+                            statusColor = AppColors.error;
+                            statusLabel = 'Đã hủy';
+                          } else if (o.status != 'delivered') {
+                            statusColor = Colors.orange;
+                            statusLabel = 'Đang xử lý';
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Mã đơn: #${o.id.replaceAll('order_mock_', '')}',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    o.createdAt != null ? dtFmt.format(o.createdAt!) : '—',
+                                    style: const TextStyle(color: AppColors.textHint, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Khách: ${o.customerName}${o.customerPhone != null && o.customerPhone!.isNotEmpty ? " (${o.customerPhone})" : ""}',
+                                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      statusLabel,
+                                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              
+                              // Itemized products list
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8F9FA),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: o.items.map((item) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 2),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '${item.quantity}x  ${item.productName}',
+                                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            fmt.format(item.totalPrice),
+                                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Thanh toán: ${o.paymentMethod.toUpperCase()}',
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                  ),
+                                  Text(
+                                    'Tổng cộng: ${fmt.format(o.totalAmount)}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.brownAccent),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 

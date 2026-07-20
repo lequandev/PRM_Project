@@ -111,7 +111,15 @@ class AnalyticsProvider extends ChangeNotifier {
           .get();
 
       _orders = snap.docs
-          .map((doc) => OrderModel.fromFirestore(doc.data(), doc.id))
+          .map((doc) {
+            try {
+              return OrderModel.fromFirestore(doc.data(), doc.id);
+            } catch (e) {
+              AppLogger.error('Lỗi parse đơn hàng ${doc.id}: $e');
+              return null;
+            }
+          })
+          .whereType<OrderModel>()
           .toList();
     } catch (e) {
       _errorMessage = 'Lỗi tải dữ liệu: $e';

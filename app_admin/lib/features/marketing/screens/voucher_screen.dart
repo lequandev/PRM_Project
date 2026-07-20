@@ -148,6 +148,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
                                       await provider.activateVoucher(v.code);
                                     }
                                   },
+                                  onEdit: () => _showEditVoucherDialog(context, v, provider),
+                                  onDelete: () => _confirmDeleteVoucher(context, v.code, provider),
                                 );
                               },
                             ),
@@ -427,6 +429,298 @@ class _VoucherScreenState extends State<VoucherScreen> {
       ],
     );
   }
+
+  // ─── Dialog chỉnh sửa Voucher ──────────────────────────────────────────────
+
+  void _showEditVoucherDialog(BuildContext context, VoucherModel voucher, VoucherProvider provider) {
+    final codeCtrl = TextEditingController(text: voucher.code);
+    final descCtrl = TextEditingController(text: voucher.description);
+    final valueCtrl = TextEditingController(text: voucher.discountValue.toInt().toString());
+    final maxDiscountCtrl = TextEditingController(text: voucher.maxDiscountAmount?.toInt().toString() ?? '');
+    final minOrderCtrl = TextEditingController(text: voucher.minOrderValue.toInt().toString());
+    final usageLimitCtrl = TextEditingController(text: voucher.usageLimit?.toString() ?? '');
+    final perUserCtrl = TextEditingController(text: voucher.perUserLimit.toString());
+    
+    String discType = voucher.discountType;
+    DateTime startD = voucher.startDate;
+    DateTime expireD = voucher.expiresAt;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text('Chỉnh sửa Voucher ${voucher.code}', 
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.brownAccent)),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: 480,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Code (Disabled)
+                      const Text('Mã Voucher (Không thể sửa)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      TextField(
+                        controller: codeCtrl,
+                        enabled: false,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: AppColors.borderLight.withValues(alpha: 0.3),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Description
+                      _dialogField('Mô tả', descCtrl),
+                      const SizedBox(height: 12),
+
+                      // Discount Type Choice
+                      const Text('Loại giảm', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          ChoiceChip(
+                            label: const Text('Phần trăm %'),
+                            selected: discType == 'percentage',
+                            onSelected: (val) {
+                              if (val) setDialogState(() => discType = 'percentage');
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: const Text('Cố định ₫'),
+                            selected: discType == 'fixed',
+                            onSelected: (val) {
+                              if (val) setDialogState(() => discType = 'fixed');
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Value & Max discount
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _dialogField(
+                              discType == 'percentage' ? 'Giá trị (%)' : 'Giá trị (₫)', 
+                              valueCtrl,
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                          if (discType == 'percentage') ...[
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _dialogField(
+                                'Giảm tối đa (₫)', 
+                                maxDiscountCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Min order & Usage limit
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _dialogField(
+                              'Đơn tối thiểu (₫)', 
+                              minOrderCtrl,
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _dialogField(
+                              'Giới hạn dùng', 
+                              usageLimitCtrl,
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Per user limit
+                      _dialogField(
+                        'Mỗi user được dùng', 
+                        perUserCtrl,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Start & End Dates
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Bắt đầu', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: startD,
+                                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                                    );
+                                    if (picked != null) setDialogState(() => startD = picked);
+                                  },
+                                  icon: const Icon(Icons.calendar_today_rounded, size: 14),
+                                  label: Text(DateFormat('dd/MM/yyyy').format(startD), style: const TextStyle(fontSize: 12)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Hết hạn', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: expireD,
+                                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                                    );
+                                    if (picked != null) setDialogState(() => expireD = picked);
+                                  },
+                                  icon: const Icon(Icons.calendar_today_rounded, size: 14),
+                                  label: Text(DateFormat('dd/MM/yyyy').format(expireD), style: const TextStyle(fontSize: 12)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Hủy'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (valueCtrl.text.trim().isEmpty) return;
+                    
+                    final updated = voucher.copyWith(
+                      description: descCtrl.text.trim(),
+                      discountType: discType,
+                      discountValue: double.tryParse(valueCtrl.text) ?? 0,
+                      maxDiscountAmount: maxDiscountCtrl.text.isNotEmpty
+                          ? double.tryParse(maxDiscountCtrl.text)
+                          : null,
+                      minOrderValue: double.tryParse(minOrderCtrl.text) ?? 0,
+                      usageLimit: usageLimitCtrl.text.isNotEmpty
+                          ? int.tryParse(usageLimitCtrl.text)
+                          : null,
+                      perUserLimit: int.tryParse(perUserCtrl.text) ?? 1,
+                      startDate: startD,
+                      expiresAt: expireD,
+                    );
+
+                    final messenger = ScaffoldMessenger.of(context);
+                    final navigator = Navigator.of(context);
+                    final ok = await provider.updateVoucher(updated);
+                    if (ok && mounted) {
+                      navigator.pop();
+                      messenger.showSnackBar(const SnackBar(
+                        content: Text('Cập nhật voucher thành công!'),
+                        backgroundColor: AppColors.success,
+                      ));
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.brownAccent,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Lưu thay đổi'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _dialogField(String label, TextEditingController ctrl, {TextInputType? keyboardType}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        TextField(
+          controller: ctrl,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Xác nhận xóa Voucher ──────────────────────────────────────────────────
+
+  void _confirmDeleteVoucher(BuildContext context, String code, VoucherProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Xác nhận xóa', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.error)),
+          content: Text('Bạn có chắc chắn muốn xóa voucher "$code" khỏi hệ thống? Hành động này không thể hoàn tác.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final navigator = Navigator.of(context);
+                final ok = await provider.deleteVoucher(code);
+                if (ok && mounted) {
+                  navigator.pop();
+                  messenger.showSnackBar(const SnackBar(
+                    content: Text('Đã xóa voucher thành công!'),
+                    backgroundColor: AppColors.success,
+                  ));
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Xóa'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 // ─── Voucher Card ─────────────────────────────────────────────────────────────
@@ -437,6 +731,8 @@ class _VoucherCard extends StatelessWidget {
   final NumberFormat fmt;
   final DateFormat dtFmt;
   final VoidCallback onToggle;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const _VoucherCard({
     required this.voucher,
@@ -444,6 +740,8 @@ class _VoucherCard extends StatelessWidget {
     required this.fmt,
     required this.dtFmt,
     required this.onToggle,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -483,45 +781,64 @@ class _VoucherCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.brownAccent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    v.code,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      letterSpacing: 1.1,
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.brownAccent,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    child: Text(
+                      v.code,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        letterSpacing: 1.1,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  statusLabel,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              IconButton(
+                icon: const Icon(Icons.edit_rounded, size: 16, color: AppColors.brownAccent),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Sửa voucher',
+                onPressed: onEdit,
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Xóa voucher',
+                onPressed: onDelete,
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                color: statusColor,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           Text(

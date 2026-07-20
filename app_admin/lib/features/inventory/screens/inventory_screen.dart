@@ -413,14 +413,33 @@ class _InventoryScreenState extends State<InventoryScreen> {
       );
       return;
     }
+    
+    final unitStr = _addUnitCtrl.text.trim().isEmpty ? 'cái' : _addUnitCtrl.text.trim();
+    final stockVal = double.tryParse(_addStockCtrl.text) ?? 0;
+    final minStockVal = double.tryParse(_addMinStockCtrl.text) ?? 0;
+
+    // Validation for discrete units
+    final unitLower = unitStr.toLowerCase().trim();
+    final discreteUnits = {'cái', 'chai', 'lon', 'hộp', 'túi', 'ly', 'gói', 'chiếc', 'quả'};
+    if (discreteUnits.contains(unitLower)) {
+      if (stockVal != stockVal.toInt() || minStockVal != minStockVal.toInt()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đơn vị "$unitStr" yêu cầu số tồn kho và ngưỡng cảnh báo phải là số nguyên!'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
     final ingredient = IngredientModel(
       id: '',
       name: _addNameCtrl.text.trim(),
-      unit: _addUnitCtrl.text.trim().isEmpty
-          ? 'cái'
-          : _addUnitCtrl.text.trim(),
-      currentStock: double.tryParse(_addStockCtrl.text) ?? 0,
-      minStock: double.tryParse(_addMinStockCtrl.text) ?? 0,
+      unit: unitStr,
+      currentStock: stockVal,
+      minStock: minStockVal,
     );
     final messenger = ScaffoldMessenger.of(context);
     final ok = await provider.addIngredient(ingredient);
@@ -513,7 +532,7 @@ class _IngredientRowState extends State<_IngredientRow> {
   void initState() {
     super.initState();
     _ctrl = TextEditingController(
-        text: widget.ingredient.currentStock.toStringAsFixed(1));
+        text: _formatStock(widget.ingredient.currentStock, widget.ingredient.unit));
   }
 
   @override
@@ -545,11 +564,32 @@ class _IngredientRowState extends State<_IngredientRow> {
   }
 
   Future<void> _saveStock() async {
-    setState(() => _isSaving = true);
-    final v = double.tryParse(_ctrl.text.replaceAll(',', ''));
-    if (v != null) {
-      await widget.onUpdate(v);
+    final text = _ctrl.text.replaceAll(',', '').trim();
+    final v = double.tryParse(text);
+    if (v == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Vui lòng nhập số hợp lệ'),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
     }
+
+    final u = widget.ingredient.unit.toLowerCase().trim();
+    final discreteUnits = {'cái', 'chai', 'lon', 'hộp', 'túi', 'ly', 'gói', 'chiếc', 'quả'};
+    final isDiscrete = discreteUnits.contains(u);
+
+    if (isDiscrete && v != v.toInt()) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Đơn vị "${widget.ingredient.unit}" yêu cầu số lượng là số nguyên!'),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    await widget.onUpdate(v);
     setState(() {
       _isEditing = false;
       _isSaving = false;
@@ -707,7 +747,7 @@ class _IngredientRowState extends State<_IngredientRow> {
                           style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 11)),
                       const SizedBox(height: 2),
-                      Text('${i.minStock.toStringAsFixed(1)} ${i.unit}',
+                      Text('${_formatStock(i.minStock, i.unit)} ${i.unit}',
                           style: const TextStyle(
                               fontSize: 13, fontWeight: FontWeight.w600)),
                     ],
@@ -723,18 +763,18 @@ class _IngredientRowState extends State<_IngredientRow> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${i.currentStock.toStringAsFixed(1)} ${i.unit}',
+                            '${_formatStock(i.currentStock, i.unit)} ${i.unit}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: _statusColor,
                               fontSize: 14,
-                                ),
-                              ),
+                            ),
+                          ),
                           const SizedBox(width: 6),
                           GestureDetector(
                             onTap: () {
                               _ctrl.text =
-                                  i.currentStock.toStringAsFixed(1);
+                                  _formatStock(i.currentStock, i.unit);
                               setState(() => _isEditing = true);
                             },
                             child: const Icon(
@@ -790,7 +830,7 @@ class _IngredientRowState extends State<_IngredientRow> {
                         ),
                       )
                     : Text(
-                        '${i.currentStock.toStringAsFixed(1)} ${i.unit}',
+                        '${_formatStock(i.currentStock, i.unit)} ${i.unit}',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: _statusColor,
@@ -800,7 +840,7 @@ class _IngredientRowState extends State<_IngredientRow> {
               ),
               Expanded(
                 child: Text(
-                  '${i.minStock.toStringAsFixed(1)} ${i.unit}',
+                  '${_formatStock(i.minStock, i.unit)} ${i.unit}',
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 13),
                 ),
@@ -867,7 +907,7 @@ class _IngredientRowState extends State<_IngredientRow> {
                                 color: AppColors.brownAccent, size: 18),
                             tooltip: 'Cập nhật số lượng',
                             onPressed: () {
-                              _ctrl.text = i.currentStock.toStringAsFixed(1);
+                              _ctrl.text = _formatStock(i.currentStock, i.unit);
                               setState(() => _isEditing = true);
                             },
                           ),
@@ -881,5 +921,20 @@ class _IngredientRowState extends State<_IngredientRow> {
       ],
     );
   }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+String _formatStock(double value, String unit) {
+  final u = unit.toLowerCase().trim();
+  final discreteUnits = {'cái', 'chai', 'lon', 'hộp', 'túi', 'ly', 'gói', 'chiếc', 'quả'};
+  if (discreteUnits.contains(u)) {
+    return value.toInt().toString();
+  }
+  // For mass/volume (kg, liters etc.), keep decimals if it has decimal part, otherwise trim it.
+  if (value == value.toInt()) {
+    return value.toInt().toString();
+  }
+  return value.toStringAsFixed(1);
 }
 

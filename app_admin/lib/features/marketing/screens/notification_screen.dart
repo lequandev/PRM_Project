@@ -70,7 +70,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Gửi Push Notification',
+          'Gửi Thông báo',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
@@ -131,7 +131,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               const SizedBox(height: 8),
               TextField(
                 controller: _titleCtrl,
-                decoration: _inputDeco('VD: Ưu đãi cuối tuần 🎉'),
+                decoration: _inputDeco('VD: Ưu đãi cuối tuần'),
                 maxLength: 65,
                 onChanged: (_) => setState(() {}),
               ),
