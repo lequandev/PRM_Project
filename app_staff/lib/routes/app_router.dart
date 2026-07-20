@@ -6,6 +6,7 @@ import '../features/auth/providers/staff_auth_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/orders/screens/order_queue_screen.dart';
 import '../features/orders/screens/order_detail_screen.dart';
+import '../features/scan/qr_scan_screen.dart';
 import '../features/inventory/screens/inventory_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../screens/main_shell_screen.dart';
@@ -68,6 +69,12 @@ final GoRouter appRouter = GoRouter(
         final orderId = state.pathParameters['id']!;
         return OrderDetailScreen(orderId: orderId);
       },
+    ),
+    // UC-24 — quét QR khách để bàn giao đơn (full-screen, ngoài shell).
+    GoRoute(
+      path: '/scan',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const QrScanScreen(),
     ),
   ],
 );

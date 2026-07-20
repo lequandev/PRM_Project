@@ -33,6 +33,13 @@ class _OrderQueueScreenState extends State<OrderQueueScreen> with SingleTickerPr
     return Scaffold(
       appBar: AppBar(
         title: const Text('HÀNG ĐỢI ĐƠN HÀNG'),
+        actions: [
+          IconButton(
+            tooltip: 'Quét QR nhận hàng',
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () => context.push('/scan'),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.goldPrimary,
