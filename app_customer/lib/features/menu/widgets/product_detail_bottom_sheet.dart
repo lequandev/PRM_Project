@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../../cart/providers/cart_provider.dart';
+import '../providers/menu_provider.dart';
 
 class ProductDetailBottomSheet extends StatefulWidget {
   final ProductModel product;
@@ -30,42 +31,65 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
 
   late List<CustomizationModel> _displayCustomizations;
 
+  bool _isInit = false;
+
   @override
   void initState() {
     super.initState();
     _displayCustomizations = List.from(widget.product.customizations);
+  }
 
-    // If it's a drink (not 'Bánh' category ID), append Sugar and Ice options
-    if (widget.product.categoryId != 'N5GPV3Bzak7UwkVZtN45') {
-      _displayCustomizations.addAll([
-        const CustomizationModel(
-          id: 'sugar_options',
-          type: 'sugar',
-          label: 'Lượng đường',
-          choices: [
-            CustomizationChoice(value: '100', label: '100% Đường'),
-            CustomizationChoice(value: '70', label: '70% Ít đường'),
-            CustomizationChoice(value: '50', label: '50% Nửa đường'),
-            CustomizationChoice(value: '0', label: '0% Không đường'),
-          ],
-        ),
-        const CustomizationModel(
-          id: 'ice_options',
-          type: 'ice',
-          label: 'Lượng đá',
-          choices: [
-            CustomizationChoice(value: '100', label: '100% Đá'),
-            CustomizationChoice(value: '50', label: '50% Ít đá'),
-            CustomizationChoice(value: '0', label: '0% (Nóng)'),
-          ],
-        )
-      ]);
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+      _isInit = true;
 
-    // Khởi tạo lựa chọn mặc định
-    for (var cust in _displayCustomizations) {
-      if (cust.choices.isNotEmpty) {
-        _selectedCustomizations[cust.type] = cust.choices.first.value;
+      final menuProvider = Provider.of<MenuProvider>(context, listen: false);
+      final category = menuProvider.categories.firstWhere(
+        (c) => c.id == widget.product.categoryId,
+        orElse: () => const CategoryModel(id: '', name: '', displayOrder: 0),
+      );
+      final categoryName = category.name.toLowerCase();
+
+      // Only show Sugar and Ice for 'trà', 'ép', 'cafe', 'cà phê', 'đá xay'
+      bool isDrinkWithIceAndSugar = categoryName.contains('trà') || 
+                                    categoryName.contains('ép') || 
+                                    categoryName.contains('cafe') || 
+                                    categoryName.contains('cà phê') ||
+                                    categoryName.contains('đá xay');
+
+      if (isDrinkWithIceAndSugar) {
+        _displayCustomizations.addAll([
+          const CustomizationModel(
+            id: 'sugar_options',
+            type: 'sugar',
+            label: 'Lượng đường',
+            choices: [
+              CustomizationChoice(value: '100', label: '100% Đường'),
+              CustomizationChoice(value: '70', label: '70% Ít đường'),
+              CustomizationChoice(value: '50', label: '50% Nửa đường'),
+              CustomizationChoice(value: '0', label: '0% Không đường'),
+            ],
+          ),
+          const CustomizationModel(
+            id: 'ice_options',
+            type: 'ice',
+            label: 'Lượng đá',
+            choices: [
+              CustomizationChoice(value: '100', label: '100% Đá'),
+              CustomizationChoice(value: '50', label: '50% Ít đá'),
+              CustomizationChoice(value: '0', label: '0% (Nóng)'),
+            ],
+          )
+        ]);
+      }
+
+      // Khởi tạo lựa chọn mặc định
+      for (var cust in _displayCustomizations) {
+        if (cust.choices.isNotEmpty) {
+          _selectedCustomizations[cust.type] = cust.choices.first.value;
+        }
       }
     }
   }
