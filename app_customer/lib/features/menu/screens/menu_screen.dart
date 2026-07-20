@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 
+import '../../../common/widgets/app_network_image.dart';
 import '../providers/menu_provider.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../widgets/product_detail_bottom_sheet.dart';
@@ -456,17 +457,11 @@ class _MenuScreenState extends State<MenuScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                product.imageUrl ?? '',
+              child: AppNetworkImage(
+                product.imageUrl,
                 width: 75,
                 height: 75,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 75,
-                  height: 75,
-                  color: AppColors.backgroundAlt,
-                  child: const Icon(Icons.coffee, color: AppColors.textHint),
-                ),
+                background: AppColors.backgroundAlt,
               ),
             ),
             const SizedBox(width: 12),
@@ -538,13 +533,9 @@ class _MenuScreenState extends State<MenuScreen> {
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                    child: Image.network(
-                      product.imageUrl ?? '',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.backgroundAlt,
-                        child: const Icon(Icons.coffee, color: AppColors.textHint),
-                      ),
+                    child: AppNetworkImage(
+                      product.imageUrl,
+                      background: AppColors.backgroundAlt,
                     ),
                   ),
                 ),

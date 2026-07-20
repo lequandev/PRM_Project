@@ -13,6 +13,10 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Nới cache ảnh trong RAM (mặc định 100MB) để ảnh không bị đẩy khỏi cache khi
+  // lướt nhiều — kết hợp cache đĩa của cached_network_image (xem AppNetworkImage).
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20; // 200 MB
+
   var firebaseReady = false;
   try {
     await Firebase.initializeApp(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:provider/provider.dart';
+import '../../../common/widgets/app_network_image.dart';
 import '../../cart/providers/cart_provider.dart';
 
 /// Một bảng điều khiển chuyên biệt dành riêng cho Giáo viên / Người làm giáo dục.
@@ -331,17 +332,11 @@ class _TeacherSpecialPanelState extends State<TeacherSpecialPanel> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        product.imageUrl ?? '',
+                      child: AppNetworkImage(
+                        product.imageUrl,
                         width: 70,
                         height: 70,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 70,
-                          height: 70,
-                          color: AppColors.backgroundAlt,
-                          child: const Icon(Icons.coffee, color: AppColors.textHint),
-                        ),
+                        background: AppColors.backgroundAlt,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -468,16 +463,13 @@ class _TeacherSpecialPanelState extends State<TeacherSpecialPanel> {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  comboProduct.imageUrl ?? '',
-                  height: 150,
+                child: AppNetworkImage(
+                  comboProduct.imageUrl,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 150,
-                    color: AppColors.backgroundAlt,
-                    child: const Icon(Icons.menu_book, size: 50, color: AppColors.textHint),
-                  ),
+                  height: 150,
+                  background: AppColors.backgroundAlt,
+                  icon: Icons.menu_book,
+                  iconSize: 50,
                 ),
               ),
               Padding(
