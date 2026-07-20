@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+// import 'package:lottie/lottie.dart'; // Lottie temporary disabled
 import '../theme/app_colors.dart';
 
 class AnimatedSplashScreen extends StatefulWidget {
@@ -19,8 +19,8 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Default fallback timer if Lottie fails to load entirely
-    _fallbackTimer = Timer(const Duration(seconds: 6), () {
+    // Default fallback timer if Lottie fails to load entirely, or while Lottie is disabled
+    _fallbackTimer = Timer(const Duration(seconds: 3), () { // Reduced from 6 to 3 for quick bypass
       _finish();
     });
   }
@@ -43,13 +43,29 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   @override
   Widget build(BuildContext context) {
     // Determine screen size for optimal rendering
-    final screenWidth = MediaQuery.of(context).size.width;
-    final lottieSize = screenWidth * 0.7 > 400.0 ? 400.0 : screenWidth * 0.7;
+    // final screenWidth = MediaQuery.of(context).size.width;
+    // final lottieSize = screenWidth * 0.7 > 400.0 ? 400.0 : screenWidth * 0.7;
 
     return Scaffold(
       backgroundColor: AppColors.coffeeMilkPrimary, // Use a warm coffee background
       body: Center(
-        child: Lottie.asset(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(color: AppColors.caramelGold),
+            const SizedBox(height: 20),
+            Text(
+              "Loading...",
+              style: TextStyle(
+                color: AppColors.caramelGold,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        )
+        /* Lottie temporary disabled
+        Lottie.asset(
           'assets/Coffee.json',
           package: 'coffee_shop_core',
           width: lottieSize, // Limit rendering size for Web performance
@@ -69,7 +85,8 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
           errorBuilder: (context, error, stackTrace) {
             return const CircularProgressIndicator(color: AppColors.caramelGold);
           },
-        ),
+        )
+        */
       ),
     );
   }
