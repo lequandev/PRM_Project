@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-// import 'package:lottie/lottie.dart'; // Lottie temporary disabled
+import 'package:lottie/lottie.dart';
 import '../theme/app_colors.dart';
 
 class AnimatedSplashScreen extends StatefulWidget {
@@ -19,8 +19,8 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Default fallback timer if Lottie fails to load entirely, or while Lottie is disabled
-    _fallbackTimer = Timer(const Duration(seconds: 3), () { // Reduced from 6 to 3 for quick bypass
+    // Default fallback timer if Lottie fails to load entirely
+    _fallbackTimer = Timer(const Duration(seconds: 6), () {
       _finish();
     });
   }
@@ -43,50 +43,37 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   @override
   Widget build(BuildContext context) {
     // Determine screen size for optimal rendering
-    // final screenWidth = MediaQuery.of(context).size.width;
-    // final lottieSize = screenWidth * 0.7 > 400.0 ? 400.0 : screenWidth * 0.7;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final lottieSize = screenWidth * 0.7 > 400.0 ? 400.0 : screenWidth * 0.7;
 
     return Scaffold(
       backgroundColor: AppColors.coffeeMilkPrimary, // Use a warm coffee background
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(color: AppColors.caramelGold),
-            const SizedBox(height: 20),
-            Text(
-              "Loading...",
-              style: TextStyle(
-                color: AppColors.caramelGold,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        )
-        /* Lottie temporary disabled
-        Lottie.asset(
-          'assets/Coffee.json',
+        child: Lottie.asset(
+          'assets/Coffee Cup.json',
           package: 'coffee_shop_core',
           width: lottieSize, // Limit rendering size for Web performance
           height: lottieSize, // Limit rendering size for Web performance
           fit: BoxFit.contain,
           animate: true,
-          repeat: false,
-          frameRate: FrameRate.max, // Smooths out lag on Web
+          repeat: true, // Use native Lottie repeat to avoid disappearing bugs on Web
+          frameRate: const FrameRate(30), // Force 30fps for smooth web animation
           filterQuality: FilterQuality.medium,
           onLoaded: (composition) {
-            // Update fallback timer based on actual composition duration
+            // Cancel fallback since it loaded successfully
             _fallbackTimer?.cancel();
-            _fallbackTimer = Timer(composition.duration + const Duration(milliseconds: 500), () {
-              _finish();
+            
+            // Đếm đúng 6 giây sau đó mới chuyển màn hình
+            Timer(const Duration(seconds: 6), () {
+              if (mounted) {
+                _finish();
+              }
             });
           },
           errorBuilder: (context, error, stackTrace) {
             return const CircularProgressIndicator(color: AppColors.caramelGold);
           },
-        )
-        */
+        ),
       ),
     );
   }
