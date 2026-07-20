@@ -64,7 +64,7 @@ service cloud.firestore {
       allow read:  if isAuth() && (
         resource.data.customerId == request.auth.uid || isStaff() || isAdmin()
       );
-      allow create: if isAuth() && isCustomer();
+      allow create: if isAuth() && (isCustomer() || isStaff() || isAdmin());
       allow update: if isAuth() && (isStaff() || isAdmin() ||
         // Customer chỉ được cancel khi status = pending
         (isCustomer() && resource.data.customerId == request.auth.uid

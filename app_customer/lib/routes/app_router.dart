@@ -41,7 +41,8 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
       if (authProvider == null) return null; // DEMO MODE — không chặn route
 
       final isLoggedIn = authProvider.currentUser != null;
-      final isAuthRoute = state.matchedLocation == '/login' ||
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password';
 
@@ -94,16 +95,14 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
       GoRoute(
         path: '/checkout/success/:orderId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => OrderSuccessScreen(
-          orderId: state.pathParameters['orderId']!,
-        ),
+        builder: (context, state) =>
+            OrderSuccessScreen(orderId: state.pathParameters['orderId']!),
       ),
       GoRoute(
         path: '/orders/:orderId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => OrderTrackingScreen(
-          orderId: state.pathParameters['orderId']!,
-        ),
+        builder: (context, state) =>
+            OrderTrackingScreen(orderId: state.pathParameters['orderId']!),
       ),
       GoRoute(
         path: '/profile/addresses',

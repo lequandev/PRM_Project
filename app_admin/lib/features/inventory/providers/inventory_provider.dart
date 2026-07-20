@@ -13,9 +13,6 @@ class InventoryProvider extends ChangeNotifier {
   List<IngredientModel> _ingredients = [];
   bool _isLoading = false;
   String? _errorMessage;
-  
-  StreamSubscription? _inventorySub;
-  StreamSubscription? _authSub;
 
   List<IngredientModel> get ingredients => _ingredients;
   bool get isLoading => _isLoading;
@@ -104,10 +101,4 @@ class InventoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  @override
-  void dispose() {
-    _inventorySub?.cancel();
-    _authSub?.cancel();
-    super.dispose();
-  }
 }
