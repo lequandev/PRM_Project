@@ -21,6 +21,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
+  final _imageUrlCtrl = TextEditingController();
 
   // State
   String _selectedCategoryId = '';
@@ -52,6 +53,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         _nameCtrl.text = product.name;
         _descCtrl.text = product.description ?? '';
         _priceCtrl.text = product.basePrice.toStringAsFixed(0);
+        _imageUrlCtrl.text = product.imageUrl ?? '';
         _selectedCategoryId = product.categoryId;
         _isAvailable = product.isAvailable;
         _tags = List.from(product.tags);
@@ -64,6 +66,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _nameCtrl.dispose();
     _descCtrl.dispose();
     _priceCtrl.dispose();
+    _imageUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -77,7 +80,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     setState(() => _isLoading = true);
     final provider = context.read<AdminProductProvider>();
     final price = double.tryParse(_priceCtrl.text.replaceAll(',', '')) ?? 0;
-
+    final imgUrl = _imageUrlCtrl.text.trim();
     bool ok;
     if (_isEditing && _editingProduct != null) {
       final updated = _editingProduct!.copyWith(
@@ -86,6 +89,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             ? null
             : _descCtrl.text.trim(),
         basePrice: price,
+        imageUrl: imgUrl.isEmpty ? null : imgUrl,
         categoryId: _selectedCategoryId,
         isAvailable: _isAvailable,
         tags: _tags,
@@ -98,6 +102,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         description:
             _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
         basePrice: price,
+        imageUrl: imgUrl.isEmpty ? null : imgUrl,
         categoryId: _selectedCategoryId,
         isAvailable: _isAvailable,
         isArchived: false,
@@ -216,6 +221,64 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                                 controller: _descCtrl,
                                 maxLines: 3,
                                 decoration: _inputDeco(hint: 'Mô tả ngắn về sản phẩm...'),
+                              ),
+                            ),
+
+                            // Image URL
+                            _FormField(
+                              label: 'Đường dẫn hình ảnh (URL)',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextFormField(
+                                    controller: _imageUrlCtrl,
+                                    decoration: _inputDeco(hint: 'Nhập liên kết hình ảnh (HTTP/HTTPS)...'),
+                                    onChanged: (val) {
+                                      setState(() {});
+                                    },
+                                  ),
+                                  if (_imageUrlCtrl.text.trim().isNotEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        _imageUrlCtrl.text.trim(),
+                                        height: 140,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Container(
+                                            height: 100,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade100,
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(color: Colors.grey.shade300),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: const Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.broken_image_rounded, color: Colors.grey, size: 20),
+                                                SizedBox(width: 8),
+                                                Text('Liên kết hình ảnh không hiển thị được',
+                                                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Container(
+                                            height: 140,
+                                            alignment: Alignment.center,
+                                            child: const CircularProgressIndicator(strokeWidth: 2),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
 
