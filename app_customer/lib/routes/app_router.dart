@@ -7,6 +7,7 @@ import '../features/auth/screens/register_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/checkout/screens/checkout_screen.dart';
 import '../features/checkout/screens/order_success_screen.dart';
+import '../features/checkout/screens/payment_screen.dart';
 import '../features/menu/screens/menu_screen.dart';
 import '../features/orders/screens/order_history_screen.dart';
 import '../features/orders/screens/order_tracking_screen.dart';
@@ -97,6 +98,13 @@ GoRouter createAppRouter(AuthProvider? authProvider) {
         builder: (context, state) => OrderSuccessScreen(
           orderId: state.pathParameters['orderId']!,
         ),
+      ),
+      GoRoute(
+        // UC-16 — thanh toán PayOS; nhận order qua extra từ màn checkout.
+        path: '/checkout/payment/:orderId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            PaymentScreen(order: state.extra as OrderModel),
       ),
       GoRoute(
         path: '/orders/:orderId',

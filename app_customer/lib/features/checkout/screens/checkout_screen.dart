@@ -195,11 +195,13 @@ class _PlaceOrderBar extends StatelessWidget {
     final provider = context.read<CheckoutProvider>();
     try {
       final order = await provider.placeOrder();
-      if (context.mounted) {
-        // pushReplacement (không phải go) để GIỮ shell menu/cart bên dưới —
-        // nếu dùng go sẽ xóa sạch stack, success + tracking mất nút back và
-        // back Android thoát app luôn.
+      if (!context.mounted) return;
+      // pushReplacement (không phải go) để GIỮ shell menu/cart bên dưới.
+      // Tiền mặt → thẳng success (thu khi giao). Online → màn thanh toán PayOS.
+      if (provider.paymentMethod == PaymentMethod.cash) {
         context.pushReplacement('/checkout/success/${order.id}');
+      } else {
+        context.pushReplacement('/checkout/payment/${order.id}', extra: order);
       }
     } catch (e) {
       if (context.mounted) {

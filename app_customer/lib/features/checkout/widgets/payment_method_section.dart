@@ -6,16 +6,27 @@ import '../providers/checkout_provider.dart';
 import 'section_card.dart';
 
 /// UC-16 — Chọn phương thức thanh toán.
-/// Cổng online (VNPay/MoMo/ZaloPay) đang chạy Demo — chờ tích hợp SDK thật.
+///
+/// 2 lựa chọn có ý nghĩa: tiền mặt (thu khi giao) và chuyển khoản/VietQR qua
+/// PayOS (THẬT). Enum core không có giá trị 'payos' riêng nên dùng `vnpay` làm
+/// đại diện cho "online/PayOS" — đơn sẽ lưu paymentMethod='vnpay'.
 class PaymentMethodSection extends StatelessWidget {
   const PaymentMethodSection({super.key});
 
-  static const _icons = <PaymentMethod, IconData>{
-    PaymentMethod.cash: Icons.payments_outlined,
-    PaymentMethod.vnpay: Icons.account_balance_outlined,
-    PaymentMethod.momo: Icons.account_balance_wallet_outlined,
-    PaymentMethod.zalopay: Icons.qr_code_2_outlined,
-  };
+  static const _options = <_PayOption>[
+    _PayOption(
+      method: PaymentMethod.cash,
+      label: 'Tiền mặt',
+      subtitle: 'Thanh toán khi nhận hàng',
+      icon: Icons.payments_outlined,
+    ),
+    _PayOption(
+      method: PaymentMethod.vnpay,
+      label: 'Chuyển khoản / Quét mã',
+      subtitle: 'Quét VietQR bằng app ngân hàng (PayOS)',
+      icon: Icons.qr_code_2_rounded,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -34,27 +45,24 @@ class PaymentMethodSection extends StatelessWidget {
         },
         child: Column(
           children: [
-            for (final method in PaymentMethod.values)
+            for (final opt in _options)
               RadioListTile<PaymentMethod>(
-                value: method,
+                value: opt.method,
                 dense: true,
                 activeColor: AppColors.goldPrimary,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 secondary: Icon(
-                  _icons[method],
-                  color: provider.paymentMethod == method
+                  opt.icon,
+                  color: provider.paymentMethod == opt.method
                       ? AppColors.goldPrimary
                       : AppColors.textSecondary,
                 ),
-                title: Row(
-                  children: [
-                    Text(method.label, style: AppTypography.bodyMedium),
-                    if (method != PaymentMethod.cash) ...[
-                      const SizedBox(width: AppSpacing.sm),
-                      const _DemoChip(),
-                    ],
-                  ],
+                title: Text(opt.label, style: AppTypography.bodyMedium),
+                subtitle: Text(
+                  opt.subtitle,
+                  style:
+                      AppTypography.caption.copyWith(color: AppColors.textHint),
                 ),
               ),
           ],
@@ -64,24 +72,16 @@ class PaymentMethodSection extends StatelessWidget {
   }
 }
 
-/// Nhãn 'Demo' cho cổng thanh toán online chưa tích hợp thật.
-class _DemoChip extends StatelessWidget {
-  const _DemoChip();
+class _PayOption {
+  const _PayOption({
+    required this.method,
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColors.warningLight,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.warning),
-      ),
-      child: Text(
-        'Demo',
-        style: AppTypography.caption.copyWith(color: AppColors.warning),
-      ),
-    );
-  }
+  final PaymentMethod method;
+  final String label;
+  final String subtitle;
+  final IconData icon;
 }
