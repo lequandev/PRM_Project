@@ -36,32 +36,36 @@ class ProductService {
   // Dev 2 dùng cho UC-07, UC-08, UC-09
 
   Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
-    final snapshot = await _db.collection('products').get();
-    final List<ProductModel> products = [];
+    Query query = _db
+        .collection('products')
+        .where('isArchived', isEqualTo: false)
+        .where('isAvailable', isEqualTo: true);
 
-    for (var doc in snapshot.docs) {
-      final data = doc.data();
+    if (categoryId.isNotEmpty) {
+      query = query.where('categoryId', isEqualTo: categoryId);
+    }
+    
+    // Sort by basePrice
+    query = query.orderBy('basePrice', descending: false);
 
-      // Fetch customizations subcollection
+    final snapshot = await query.get();
+
+    // Fetch customizations concurrently to solve N+1 problem and reduce load time to < 1s
+    final products = await Future.wait(snapshot.docs.map((doc) async {
+      final data = doc.data() as Map<String, dynamic>;
+
       final custSnapshot = await doc.reference
           .collection('customizations')
           .get();
+      
       final customizations = custSnapshot.docs
           .map((cDoc) => CustomizationModel.fromFirestore(cDoc.data(), cDoc.id))
           .toList();
 
-      final product = ProductModel.fromFirestore(
-        data,
-        doc.id,
-      ).copyWith(customizations: customizations);
+      return ProductModel.fromFirestore(data, doc.id)
+          .copyWith(customizations: customizations);
+    }));
 
-      // Client-side filtering to support varying schemas and avoid index requirements
-      if (product.isArchived) continue;
-      if (!product.isAvailable) continue;
-      if (categoryId.isNotEmpty && product.categoryId != categoryId) continue;
-
-      products.add(product);
-    }
     return products;
   }
 

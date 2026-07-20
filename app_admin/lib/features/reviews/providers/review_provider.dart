@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 
 /// ReviewProvider — Kiểm duyệt đánh giá (UC-40).
 class ReviewProvider extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  StreamSubscription<User?>? _authSub;
 
   List<ReviewWithProduct> _reviews = [];
   bool _isLoading = false;
@@ -21,7 +24,14 @@ class ReviewProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   ReviewProvider() {
-    loadAllReviews();
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        loadAllReviews();
+      } else {
+        _reviews = [];
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> loadAllReviews() async {
@@ -108,6 +118,12 @@ class ReviewProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }
 

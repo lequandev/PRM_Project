@@ -40,9 +40,6 @@ class NotificationProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Thay bằng Firebase Functions endpoint khi Dev 1 cung cấp
-      // await http.post('https://.../sendNotification', body: {...})
-      
       // Simulate network delay
       await Future.delayed(const Duration(seconds: 1));
 
@@ -55,8 +52,8 @@ class NotificationProvider extends ChangeNotifier {
           sentAt: DateTime.now(),
         ),
       );
-      _successMessage = 'Đã gửi thông báo thành công!';
-      AppLogger.info('Notification sent: $title → $target');
+      _successMessage = 'Đã gửi thông báo thành công (Mock)!';
+      AppLogger.info('Notification sent (Mock): $title → $target');
       _isSending = false;
       notifyListeners();
       return true;

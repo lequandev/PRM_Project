@@ -7,13 +7,12 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 /// Dùng InventoryService từ core_module (đã implement đầy đủ bởi Dev 1).
 class InventoryProvider extends ChangeNotifier {
   final InventoryService _service = InventoryService();
+  StreamSubscription? _inventorySub;
+  StreamSubscription<User?>? _authSub;
 
   List<IngredientModel> _ingredients = [];
   bool _isLoading = false;
   String? _errorMessage;
-  
-  StreamSubscription? _inventorySub;
-  StreamSubscription? _authSub;
 
   List<IngredientModel> get ingredients => _ingredients;
   bool get isLoading => _isLoading;
@@ -45,7 +44,6 @@ class InventoryProvider extends ChangeNotifier {
 
   void _loadAndWatch() {
     if (_inventorySub != null) return; // Already listening
-
     _isLoading = true;
     notifyListeners();
 
@@ -102,4 +100,5 @@ class InventoryProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
 }

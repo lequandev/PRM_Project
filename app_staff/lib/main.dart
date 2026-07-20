@@ -134,6 +134,12 @@ class _StaffAppState extends State<StaffApp> {
 
 Future<void> _seedMockData() async {
   try {
+    final auth = FirebaseAuth.instance;
+    // Tạm đăng nhập để có quyền ghi (thoả mãn isAuth() trong rules)
+    if (auth.currentUser == null) {
+      await auth.signInWithEmailAndPassword(email: 'staff@coffeeshop.com', password: 'Password123');
+    }
+    
     final db = FirebaseFirestore.instance;
     
     // 1. Seed Inventory
