@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../providers/loyalty_provider.dart';
 
 /// LoyaltyScreen — UC-27 (xem điểm + lịch sử), UC-28 (đổi điểm lấy voucher).
@@ -14,7 +15,10 @@ class LoyaltyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-          LoyaltyProvider(context.read<ProfileRepository>())..load(),
+          LoyaltyProvider(
+        context.read<ProfileRepository>(),
+        context.read<CurrentSession>(),
+      )..load(),
       child: const _LoyaltyView(),
     );
   }

@@ -1,17 +1,18 @@
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../data/app_session.dart';
+import '../../../data/session.dart';
 import '../../../data/profile_repository.dart';
 
 /// LoyaltyProvider — UC-27 (xem điểm + lịch sử), UC-28 (đổi điểm lấy voucher).
 class LoyaltyProvider extends ChangeNotifier {
-  LoyaltyProvider(this._repository);
+  LoyaltyProvider(this._repository, this._session);
 
   /// Số điểm cần cho 1 lần đổi voucher.
   static const int redeemCost = 500;
 
   final ProfileRepository _repository;
+  final CurrentSession _session;
 
   int _points = 0;
   List<LoyaltyTransactionModel> _transactions = [];
@@ -32,8 +33,8 @@ class LoyaltyProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final results = await Future.wait([
-        _repository.getLoyaltyPoints(AppSession.uid),
-        _repository.getLoyaltyTransactions(AppSession.uid),
+        _repository.getLoyaltyPoints(_session.uid),
+        _repository.getLoyaltyTransactions(_session.uid),
       ]);
       _points = results[0] as int;
       _transactions = results[1] as List<LoyaltyTransactionModel>;
@@ -53,7 +54,7 @@ class LoyaltyProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final code = await _repository.redeemPoints(
-        uid: AppSession.uid,
+        uid: _session.uid,
         points: redeemCost,
       );
       await load();

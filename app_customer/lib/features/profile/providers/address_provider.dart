@@ -1,7 +1,7 @@
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../data/app_session.dart';
+import '../../../data/session.dart';
 import '../../../data/profile_repository.dart';
 
 /// AddressProvider — UC-05: CRUD địa chỉ đã lưu.
@@ -9,9 +9,10 @@ import '../../../data/profile_repository.dart';
 /// Nhận [ProfileRepository] qua constructor. Sau mỗi thao tác ghi đều reload
 /// danh sách để UI luôn khớp nguồn dữ liệu (repo tự xử lý logic bỏ default cũ).
 class AddressProvider extends ChangeNotifier {
-  AddressProvider(this._repository);
+  AddressProvider(this._repository, this._session);
 
   final ProfileRepository _repository;
+  final CurrentSession _session;
 
   List<AddressModel> _addresses = [];
   bool _isLoading = false;
@@ -28,7 +29,7 @@ class AddressProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _addresses = await _repository.getAddresses(AppSession.uid);
+      _addresses = await _repository.getAddresses(_session.uid);
     } catch (e) {
       _error = 'Không tải được danh sách địa chỉ.';
     } finally {
@@ -40,21 +41,21 @@ class AddressProvider extends ChangeNotifier {
   /// Thêm mới — truyền address với id rỗng, repo tự sinh id.
   Future<bool> addAddress(AddressModel address) async {
     return _mutate(() async {
-      await _repository.addAddress(uid: AppSession.uid, address: address);
+      await _repository.addAddress(uid: _session.uid, address: address);
     });
   }
 
   /// Sửa — giữ nguyên id của address cũ.
   Future<bool> updateAddress(AddressModel address) async {
     return _mutate(() async {
-      await _repository.updateAddress(uid: AppSession.uid, address: address);
+      await _repository.updateAddress(uid: _session.uid, address: address);
     });
   }
 
   Future<bool> deleteAddress(String addressId) async {
     return _mutate(() async {
       await _repository.deleteAddress(
-        uid: AppSession.uid,
+        uid: _session.uid,
         addressId: addressId,
       );
     });
@@ -71,7 +72,7 @@ class AddressProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await action();
-      _addresses = await _repository.getAddresses(AppSession.uid);
+      _addresses = await _repository.getAddresses(_session.uid);
       return true;
     } catch (e) {
       _error = 'Thao tác thất bại. Vui lòng thử lại.';

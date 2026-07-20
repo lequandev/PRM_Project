@@ -48,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               backgroundColor: AppColors.success,
             ),
           );
-          context.go('/home');
+          context.go('/menu');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

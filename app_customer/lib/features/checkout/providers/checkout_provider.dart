@@ -1,10 +1,10 @@
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../data/app_session.dart';
 import '../../../data/checkout_repository.dart';
 import '../../../data/fake_seed.dart';
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../../cart/providers/cart_provider.dart';
 
 /// CheckoutProvider — state cho màn thanh toán (UC-13 → UC-17).
@@ -21,17 +21,21 @@ class CheckoutProvider extends ChangeNotifier {
     required CheckoutRepository checkoutRepository,
     required ProfileRepository profileRepository,
     required CartProvider cart,
+    required CurrentSession session,
   })  : _checkoutRepository = checkoutRepository,
         _profileRepository = profileRepository,
-        _cart = cart {
+        _cart = cart,
+        _session = session {
     // Giỏ hàng đổi (Dev 2 thêm/bớt món) → tiền phải tính lại.
     _cart.addListener(_onCartChanged);
     loadAddresses();
+    _loadStoreConfig();
   }
 
   final CheckoutRepository _checkoutRepository;
   final ProfileRepository _profileRepository;
   final CartProvider _cart;
+  final CurrentSession _session;
 
   // ─── State ────────────────────────────────────────────────
 
@@ -46,6 +50,12 @@ class CheckoutProvider extends ChangeNotifier {
 
   List<AddressModel> addresses = [];
   bool isLoadingAddresses = false;
+
+  // Cấu hình cửa hàng (UC-36) — mặc định theo FakeSeed, thay bằng giá trị
+  // thật từ StoreConfigService ngay khi load xong.
+  double deliveryFeeConfig = FakeSeed.deliveryFee;
+  double minDeliveryOrder = FakeSeed.minDeliveryOrder;
+  double loyaltyRate = FakeSeed.loyaltyRate;
 
   // ─── Giỏ hàng (chỉ đọc) ───────────────────────────────────
 
@@ -63,15 +73,15 @@ class CheckoutProvider extends ChangeNotifier {
       (voucher?.calculateDiscount(subtotal) ?? 0).roundToDouble();
 
   double get deliveryFee =>
-      orderType == OrderType.delivery ? FakeSeed.deliveryFee.roundToDouble() : 0;
+      orderType == OrderType.delivery ? deliveryFeeConfig.roundToDouble() : 0;
 
   double get total => (subtotal - discount + deliveryFee).roundToDouble();
 
-  int get estimatedPoints => (total * FakeSeed.loyaltyRate).floor();
+  int get estimatedPoints => (total * loyaltyRate).floor();
 
   /// Đơn giao hàng chưa đạt giá trị tối thiểu?
   bool get isBelowDeliveryMinimum =>
-      orderType == OrderType.delivery && subtotal < FakeSeed.minDeliveryOrder;
+      orderType == OrderType.delivery && subtotal < minDeliveryOrder;
 
   /// Đủ điều kiện bấm nút Đặt hàng?
   bool get canPlaceOrder =>
@@ -87,7 +97,7 @@ class CheckoutProvider extends ChangeNotifier {
     isLoadingAddresses = true;
     notifyListeners();
     try {
-      addresses = await _profileRepository.getAddresses(AppSession.uid);
+      addresses = await _profileRepository.getAddresses(_session.uid);
       if (selectedAddress == null && addresses.isNotEmpty) {
         selectedAddress = addresses.firstWhere(
           (a) => a.isDefault,
@@ -97,6 +107,18 @@ class CheckoutProvider extends ChangeNotifier {
     } finally {
       isLoadingAddresses = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadStoreConfig() async {
+    try {
+      final config = await _checkoutRepository.getStoreConfig();
+      deliveryFeeConfig = config.deliveryFee;
+      minDeliveryOrder = config.minDeliveryOrder;
+      loyaltyRate = config.loyaltyRate;
+      notifyListeners();
+    } catch (_) {
+      // Giữ mặc định FakeSeed nếu không đọc được /config/store.
     }
   }
 
@@ -136,7 +158,7 @@ class CheckoutProvider extends ChangeNotifier {
       voucher = await _checkoutRepository.validateVoucher(
         code: code,
         orderTotal: subtotal,
-        userId: AppSession.uid,
+        userId: _session.uid,
       );
       voucherError = null;
     } on VoucherException catch (e) {
@@ -166,9 +188,9 @@ class CheckoutProvider extends ChangeNotifier {
       final trimmedNote = note.trim();
       final order = OrderModel(
         id: '', // repository sinh id thật khi tạo đơn
-        customerId: AppSession.uid,
-        customerName: AppSession.name,
-        customerPhone: AppSession.phone,
+        customerId: _session.uid,
+        customerName: _session.name,
+        customerPhone: _session.phone,
         items: List.of(_cart.items),
         subtotal: subtotal,
         discountAmount: discount,

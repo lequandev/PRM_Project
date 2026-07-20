@@ -1,6 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Map tiles (OSM) + geocoding API -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- UC-05: nút "Vị trí hiện tại" trong form địa chỉ -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
-        android:label="app_customer"
+        android:label="Coffee Shop"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

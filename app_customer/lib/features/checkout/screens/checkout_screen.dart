@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../data/checkout_repository.dart';
 import '../../../data/profile_repository.dart';
+import '../../../data/session.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/checkout_provider.dart';
 import '../widgets/address_section.dart';
@@ -25,6 +26,7 @@ class CheckoutScreen extends StatelessWidget {
         checkoutRepository: context.read<CheckoutRepository>(),
         profileRepository: context.read<ProfileRepository>(),
         cart: context.read<CartProvider>(),
+        session: context.read<CurrentSession>(),
       ),
       child: const _CheckoutView(),
     );
@@ -194,7 +196,10 @@ class _PlaceOrderBar extends StatelessWidget {
     try {
       final order = await provider.placeOrder();
       if (context.mounted) {
-        context.go('/checkout/success/${order.id}');
+        // pushReplacement (không phải go) để GIỮ shell menu/cart bên dưới —
+        // nếu dùng go sẽ xóa sạch stack, success + tracking mất nút back và
+        // back Android thoát app luôn.
+        context.pushReplacement('/checkout/success/${order.id}');
       }
     } catch (e) {
       if (context.mounted) {

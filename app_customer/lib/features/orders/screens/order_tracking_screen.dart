@@ -1,5 +1,6 @@
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/order_repository.dart';
@@ -31,14 +32,35 @@ class OrderTrackingScreen extends StatelessWidget {
 class _TrackingView extends StatelessWidget {
   const _TrackingView();
 
+  /// Back an toàn: còn stack thì pop; vào thẳng từ màn success (stack đã bị
+  /// pushReplacement) thì về lịch sử đơn — KHÔNG bao giờ để back thoát app.
+  void _back(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/orders');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<OrderTrackingProvider>();
     final order = provider.order;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back(context);
+      },
+      child: Scaffold(
       backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(title: const Text('Theo dõi đơn hàng')),
+      appBar: AppBar(
+        title: const Text('Theo dõi đơn hàng'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => _back(context),
+        ),
+      ),
       body: () {
         if (order == null && provider.error != null) {
           return _ErrorState(message: provider.error!);
@@ -82,6 +104,7 @@ class _TrackingView extends StatelessWidget {
           ],
         );
       }(),
+      ),
     );
   }
 }

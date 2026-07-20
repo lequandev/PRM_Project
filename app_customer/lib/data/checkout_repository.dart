@@ -24,6 +24,9 @@ abstract class CheckoutRepository {
   });
 
   Future<OrderModel> placeOrder(OrderModel order);
+
+  /// Phí ship / đơn tối thiểu / tỷ lệ tích điểm (UC-36 cung cấp).
+  Future<StoreConfig> getStoreConfig();
 }
 
 class FakeCheckoutRepository implements CheckoutRepository {
@@ -62,4 +65,20 @@ class FakeCheckoutRepository implements CheckoutRepository {
   @override
   Future<OrderModel> placeOrder(OrderModel order) =>
       _orderRepository.createOrder(order);
+
+  @override
+  Future<StoreConfig> getStoreConfig() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return const StoreConfig(
+      storeName: 'Coffee Shop',
+      address: '',
+      phone: '',
+      openTime: '07:00',
+      closeTime: '22:00',
+      isOpen: true,
+      deliveryFee: FakeSeed.deliveryFee,
+      minDeliveryOrder: FakeSeed.minDeliveryOrder,
+      loyaltyRate: FakeSeed.loyaltyRate,
+    );
+  }
 }

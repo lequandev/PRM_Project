@@ -1,8 +1,8 @@
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../data/app_session.dart';
 import '../../../data/order_repository.dart';
+import '../../../data/session.dart';
 
 /// Nhóm filter trên màn lịch sử đơn hàng (UC-18).
 enum OrderHistoryFilter {
@@ -45,11 +45,12 @@ enum OrderHistoryFilter {
 
 /// Provider màn lịch sử đơn hàng — load qua [OrderRepository], lọc theo nhóm.
 class OrderHistoryProvider extends ChangeNotifier {
-  OrderHistoryProvider(this._repository) {
+  OrderHistoryProvider(this._repository, this._session) {
     refresh();
   }
 
   final OrderRepository _repository;
+  final CurrentSession _session;
 
   bool _isLoading = true;
   String? _error;
@@ -77,7 +78,7 @@ class OrderHistoryProvider extends ChangeNotifier {
       _notify();
     }
     try {
-      _orders = await _repository.getOrdersByCustomer(AppSession.uid);
+      _orders = await _repository.getOrdersByCustomer(_session.uid);
       _error = null;
     } catch (_) {
       _error = 'Không tải được danh sách đơn hàng. Vui lòng thử lại.';

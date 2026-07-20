@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../data/profile_repository.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../data/session.dart';
 import '../providers/profile_provider.dart';
 
 /// ProfileScreen — UC-04 (hồ sơ), điều hướng UC-05/03/27, UC-06 (xóa tài khoản).
@@ -15,7 +16,10 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-          ProfileProvider(context.read<ProfileRepository>())..loadProfile(),
+          ProfileProvider(
+        context.read<ProfileRepository>(),
+        context.read<CurrentSession>(),
+      )..loadProfile(),
       child: const _ProfileView(),
     );
   }
@@ -533,6 +537,8 @@ class _MenuGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Shadow ở Container ngoài, MÀU ở Material trong — ListTile vẽ ink
+    // splash lên Material gần nhất, đặt màu ở Container sẽ che mất ink.
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.card),

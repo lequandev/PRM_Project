@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../data/app_session.dart';
+import '../../../data/session.dart';
 import '../../../data/profile_repository.dart';
+import '../../../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 
 /// ResetPasswordScreen — UC-03: gửi email đặt lại mật khẩu.
@@ -18,7 +19,10 @@ class ResetPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ProfileProvider(context.read<ProfileRepository>()),
+      create: (context) => ProfileProvider(
+        context.read<ProfileRepository>(),
+        context.read<CurrentSession>(),
+      ),
       child: const _ResetPasswordView(),
     );
   }
@@ -34,7 +38,19 @@ class _ResetPasswordView extends StatefulWidget {
 class _ResetPasswordViewState extends State<_ResetPasswordView> {
   final _formKey = GlobalKey<FormState>();
   // Prefill email của phiên demo.
-  final _emailController = TextEditingController(text: AppSession.email);
+  late final _emailController =
+      TextEditingController(text: _prefillEmail());
+
+  /// Đã đăng nhập → email thật; vào từ màn login (chưa đăng nhập) → để trống;
+  /// demo mode (không có AuthProvider) → email demo.
+  String _prefillEmail() {
+    try {
+      final auth = context.read<AuthProvider>();
+      return auth.currentUser?.email ?? '';
+    } on ProviderNotFoundException {
+      return context.read<CurrentSession>().email;
+    }
+  }
   bool _sent = false;
 
   @override

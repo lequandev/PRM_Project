@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/common/app_exception.dart';
 import '../models/voucher/voucher_model.dart';
+import '../utils/extensions/num_extensions.dart';
 
 /// VoucherService — Firestore access layer cho Vouchers.
 ///
@@ -19,14 +21,70 @@ class VoucherService {
     required String code,
     required double orderTotal,
     required String userId,
-  }) {
-    // TODO: Dev 1 implements khi Dev 3 cần (UC-14)
-    throw UnimplementedError('VoucherService.validateVoucher — chưa implement');
+  }) async {
+    final normalized = code.trim().toUpperCase();
+    late final VoucherModel voucher;
+    try {
+      final doc = await _db.collection('vouchers').doc(normalized).get();
+      if (!doc.exists || doc.data() == null) {
+        throw AppException(
+          code: 'voucher/not-found',
+          message: 'Mã "$normalized" không tồn tại.',
+        );
+      }
+      voucher = VoucherModel.fromFirestore(doc.data()!, doc.id);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw DatabaseException.unknown(e);
+    }
+
+    // Business checks — message hiển thị thẳng lên UI checkout
+    final now = DateTime.now();
+    if (!voucher.isActive) {
+      throw AppException(
+        code: 'voucher/inactive',
+        message: 'Mã $normalized đã bị vô hiệu hóa.',
+      );
+    }
+    if (now.isBefore(voucher.startDate)) {
+      throw AppException(
+        code: 'voucher/not-started',
+        message: 'Mã $normalized chưa đến đợt áp dụng.',
+      );
+    }
+    if (now.isAfter(voucher.expiresAt)) {
+      throw AppException(
+        code: 'voucher/expired',
+        message: 'Mã $normalized đã hết hạn.',
+      );
+    }
+    if (voucher.usageLimit != null &&
+        voucher.usageCount >= voucher.usageLimit!) {
+      throw AppException(
+        code: 'voucher/out-of-uses',
+        message: 'Mã $normalized đã hết lượt sử dụng.',
+      );
+    }
+    if (orderTotal < voucher.minOrderValue) {
+      throw AppException(
+        code: 'voucher/min-order',
+        message:
+            'Đơn tối thiểu ${voucher.minOrderValue.toVnd} mới dùng được mã này.',
+      );
+    }
+    // TODO(Dev 1): perUserLimit chưa enforce được — cần subcollection
+    // /vouchers/{code}/usages/{uid} hoặc đếm trong orders. Ghi nhận ở PR này.
+    return voucher;
   }
 
-  Future<void> incrementUsageCount(String code) {
-    // TODO: Dev 1 implements khi Dev 3 cần (UC-14, sau createOrder)
-    throw UnimplementedError('VoucherService.incrementUsageCount — chưa implement');
+  Future<void> incrementUsageCount(String code) async {
+    try {
+      await _db.collection('vouchers').doc(code.trim().toUpperCase()).update({
+        'usageCount': FieldValue.increment(1),
+      });
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   // ─── UC-29: Admin quản lý voucher ─────────────────────

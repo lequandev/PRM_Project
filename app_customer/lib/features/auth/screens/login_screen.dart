@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         if (success) {
-          context.go('/home');
+          context.go('/menu');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -103,7 +103,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      // [Dev3] UC-03: link tới màn Quên mật khẩu (Quân yêu cầu)
+                      onPressed: () => context.push('/forgot-password'),
+                      child: const Text('Quên mật khẩu?'),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   ElevatedButton(
                     onPressed: isLoading ? null : _onLogin,
                     child: isLoading

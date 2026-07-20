@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isCustomer() { return getRole() == 'customer'; }
+    function isStaff()    { return getRole() == 'staff'; }
+    function isAdmin()    { return getRole() == 'admin'; }
+
+    // Users
+    match /users/{uid} {
+      allow read:  if isAuth() && (isOwner(uid) || isAdmin());
+      allow create: if isAuth() && isOwner(uid);
+      allow update: if isAuth() && (isOwner(uid) || isAdmin());
+      allow delete: if isAdmin();
+
+      match /addresses/{addressId} {
+        allow read, write: if isAuth() && isOwner(uid);
+      }
+      match /loyaltyTransactions/{txId} {
+        allow read:  if isAuth() && (isOwner(uid) || isAdmin());
+        // [Dev3 - PR feature/dev3-connect-db] Đổi từ `write: if false`:
+        // dự án không dùng Cloud Functions (TECH_STACK chốt Firebase thuần),
+        // owner được ghi transaction của chính mình để UC-27/28 hoạt động.
+        allow create: if isAuth() && isOwner(uid);
+        allow update, delete: if false;
+      }
+    }
+
+    // Categories
+    match /categories/{categoryId} {
+      allow read:  if true;               // Public
+      allow write: if isAuth() && isAdmin();
+    }
+
+    // Products
+    match /products/{productId} {
+      allow read:  if true;               // Public
+      allow write: if isAuth() && isAdmin();
+
+      match /customizations/{id} {
+        allow read:  if true;
+        allow write: if isAuth() && isAdmin();
+      }
+      match /reviews/{reviewId} {
+        allow read:  if true;
+        allow create: if isAuth() && isCustomer();
+        allow update: if isAuth() && isAdmin(); // moderation
+        allow delete: if isAuth() && isAdmin();
+      }
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow read:  if isAuth() && (
+        resource.data.customerId == request.auth.uid || isStaff() || isAdmin()
+      );
+      allow create: if isAuth() && isCustomer();
+      allow update: if isAuth() && (isStaff() || isAdmin() ||
+        // Customer chỉ được cancel khi status = pending
+        (isCustomer() && resource.data.customerId == request.auth.uid
+          && resource.data.status == 'pending')
+      );
+      allow delete: if false; // Orders không bao giờ xóa
+    }
+
+    // Vouchers
+    match /vouchers/{code} {
+      allow read:  if isAuth();
+      // [Dev3 - PR feature/dev3-connect-db] Tách write thành create/update/delete:
+      // customer sau khi đặt hàng cần +1 usageCount (UC-14) — chỉ cho phép
+      // update khi KHÔNG đụng field nào khác ngoài usageCount.
+      allow create, delete: if isAuth() && isAdmin();
+      allow update: if isAuth() && (isAdmin() ||
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['usageCount']));
+    }
+
+    // Inventory
+    match /inventory/{ingredientId} {
+      allow read:  if isAuth() && (isStaff() || isAdmin());
+      allow write: if isAuth() && (isStaff() || isAdmin());
+    }
+
+    // Store Config
+    match /config/{docId} {
+      allow read:  if true;              // Public (isOpen, openTime...)
+      allow write: if isAuth() && isAdmin();
+    }
+  }
+}
