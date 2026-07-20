@@ -13,22 +13,29 @@ import 'features/menu/providers/menu_provider.dart';
 import 'providers/auth_provider.dart';
 import 'routes/app_router.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key, this.firebaseReady = false});
 
   /// false = DEMO MODE: không AuthProvider, data chạy fake, banner DEMO ở góc.
   final bool firebaseReady;
 
   @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  bool _showSplash = true;
+
+  @override
   Widget build(BuildContext context) {
     // Fake giữ làm "túi khí": Firebase lỗi (config/index/rules) vẫn demo được.
-    final fakeOrders = firebaseReady ? null : FakeOrderRepository();
+    final fakeOrders = widget.firebaseReady ? null : FakeOrderRepository();
     return MultiProvider(
       providers: [
         // ── Dev 2 / Tú ──
         ChangeNotifierProvider(create: (_) => MenuProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        if (firebaseReady) ...[
+        if (widget.firebaseReady) ...[
           // Profile lai: hồ sơ/điểm/reset-password thật, phần UserService
           // còn stub chạy fake (xem CoreProfileRepository).
           Provider<ProfileRepository>(
@@ -59,25 +66,34 @@ class App extends StatelessWidget {
           ),
         ],
       ],
-      child: firebaseReady
+      child: widget.firebaseReady
           ? Consumer<AuthProvider>(
               builder: (context, authProvider, child) {
-                if (authProvider.isInitializing) {
+                if (_showSplash || authProvider.isInitializing) {
                   return MaterialApp(
                     debugShowCheckedModeBanner: false,
                     theme: AppTheme.light,
-                    home: const Scaffold(
-                      body: Center(
-                        child: CircularProgressIndicator(
-                            color: AppColors.goldPrimary),
-                      ),
+                    home: AnimatedSplashScreen(
+                      onFinished: () {
+                        if (mounted) setState(() => _showSplash = false);
+                      },
                     ),
                   );
                 }
                 return _RouterApp(authProvider: authProvider);
               },
             )
-          : const _RouterApp(authProvider: null),
+          : (_showSplash
+              ? MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  theme: AppTheme.light,
+                  home: AnimatedSplashScreen(
+                    onFinished: () {
+                      if (mounted) setState(() => _showSplash = false);
+                    },
+                  ),
+                )
+              : const _RouterApp(authProvider: null)),
     );
   }
 }

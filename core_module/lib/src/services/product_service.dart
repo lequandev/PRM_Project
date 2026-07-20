@@ -26,7 +26,7 @@ class ProductService {
         .map((doc) => CategoryModel.fromFirestore(doc.data(), doc.id))
         .where((cat) => cat.isActive)
         .toList();
-    
+
     // Client-side sort by displayOrder
     categories.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
     return categories;
@@ -38,52 +38,61 @@ class ProductService {
   Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
     final snapshot = await _db.collection('products').get();
     final List<ProductModel> products = [];
-    
+
     for (var doc in snapshot.docs) {
       final data = doc.data();
-      
+
       // Fetch customizations subcollection
-      final custSnapshot = await doc.reference.collection('customizations').get();
+      final custSnapshot = await doc.reference
+          .collection('customizations')
+          .get();
       final customizations = custSnapshot.docs
           .map((cDoc) => CustomizationModel.fromFirestore(cDoc.data(), cDoc.id))
           .toList();
-          
-      final product = ProductModel.fromFirestore(data, doc.id).copyWith(
-        customizations: customizations,
-      );
-      
+
+      final product = ProductModel.fromFirestore(
+        data,
+        doc.id,
+      ).copyWith(customizations: customizations);
+
       // Client-side filtering to support varying schemas and avoid index requirements
       if (product.isArchived) continue;
       if (!product.isAvailable) continue;
       if (categoryId.isNotEmpty && product.categoryId != categoryId) continue;
-      
+
       products.add(product);
     }
     return products;
   }
 
   Future<List<ProductModel>> searchProducts(String query) async {
-    final snapshot = await _db.collection('products')
+    final snapshot = await _db
+        .collection('products')
         .where('isArchived', isEqualTo: false)
         .where('isAvailable', isEqualTo: true)
         .get();
-    
+
     final List<ProductModel> products = [];
     final lowerQuery = query.toLowerCase();
-    
+
     for (var doc in snapshot.docs) {
       final data = doc.data();
       final name = (data['name'] as String? ?? '').toLowerCase();
-      
+
       if (name.contains(lowerQuery)) {
-        final custSnapshot = await doc.reference.collection('customizations').get();
+        final custSnapshot = await doc.reference
+            .collection('customizations')
+            .get();
         final customizations = custSnapshot.docs
-            .map((cDoc) => CustomizationModel.fromFirestore(cDoc.data(), cDoc.id))
+            .map(
+              (cDoc) => CustomizationModel.fromFirestore(cDoc.data(), cDoc.id),
+            )
             .toList();
-            
-        final product = ProductModel.fromFirestore(data, doc.id).copyWith(
-          customizations: customizations,
-        );
+
+        final product = ProductModel.fromFirestore(
+          data,
+          doc.id,
+        ).copyWith(customizations: customizations);
         products.add(product);
       }
     }
@@ -100,34 +109,96 @@ class ProductService {
     final customizations = custSnapshot.docs
         .map((cDoc) => CustomizationModel.fromFirestore(cDoc.data(), cDoc.id))
         .toList();
-        
-    return ProductModel.fromFirestore(data, doc.id).copyWith(
-      customizations: customizations,
-    );
+
+    return ProductModel.fromFirestore(
+      data,
+      doc.id,
+    ).copyWith(customizations: customizations);
   }
 
   // ─── Admin CRUD ────────────────────────────────────────
   // Dev 5 dùng cho UC-31, UC-32, UC-33
 
-  Future<ProductModel> createProduct(ProductModel product) {
-    // TODO: Dev 1 implements khi Dev 5 cần (UC-31)
-    throw UnimplementedError('ProductService.createProduct — chưa implement');
+  Future<ProductModel> createProduct(ProductModel product) async {
+    try {
+      final docRef = product.id.isEmpty
+          ? _db.collection('products').doc()
+          : _db.collection('products').doc(product.id);
+
+      final newProduct = product.copyWith(id: docRef.id);
+      await docRef.set(ProductModel.toFirestore(newProduct));
+
+      if (newProduct.customizations.isNotEmpty) {
+        final batch = _db.batch();
+        for (final customization in newProduct.customizations) {
+          final custId = customization.id.isEmpty
+              ? _db.collection('products').doc().id
+              : customization.id;
+          final custRef = docRef.collection('customizations').doc(custId);
+          batch.set(
+            custRef,
+            CustomizationModel.toFirestore(
+              customization.copyWith(id: custRef.id),
+            ),
+          );
+        }
+        await batch.commit();
+      }
+      return newProduct;
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
-  Future<void> updateProduct(ProductModel product) {
-    // TODO: Dev 1 implements khi Dev 5 cần (UC-32)
-    throw UnimplementedError('ProductService.updateProduct — chưa implement');
+  Future<void> updateProduct(ProductModel product) async {
+    try {
+      final docRef = _db.collection('products').doc(product.id);
+      await docRef.update(ProductModel.toFirestore(product));
+
+      final custSnapshot = await docRef.collection('customizations').get();
+      final batch = _db.batch();
+
+      for (var doc in custSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      for (final customization in product.customizations) {
+        final custId = customization.id.isEmpty
+            ? _db.collection('products').doc().id
+            : customization.id;
+        final custRef = docRef.collection('customizations').doc(custId);
+        batch.set(
+          custRef,
+          CustomizationModel.toFirestore(
+            customization.copyWith(id: custRef.id),
+          ),
+        );
+      }
+
+      await batch.commit();
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
-  Future<void> archiveProduct(String productId) {
-    // TODO: Dev 1 implements khi Dev 5 cần (UC-33)
-    throw UnimplementedError('ProductService.archiveProduct — chưa implement');
+  Future<void> archiveProduct(String productId) async {
+    try {
+      await _db.collection('products').doc(productId).update({
+        'isArchived': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   // ─── Reviews ───────────────────────────────────────────
   // Dev 3 (submit UC-39), Dev 5 (moderate UC-40)
 
-  Future<void> submitReview({required String productId, required ReviewModel review}) async {
+  Future<void> submitReview({
+    required String productId,
+    required ReviewModel review,
+  }) async {
     try {
       await _db
           .collection('products')
@@ -139,18 +210,47 @@ class ProductService {
     }
   }
 
-  Future<List<ReviewModel>> getPendingReviews(String productId) {
-    // TODO: Dev 1 implements khi Dev 5 cần (UC-40)
-    throw UnimplementedError('ProductService.getPendingReviews — chưa implement');
+  Future<List<ReviewModel>> getPendingReviews(String productId) async {
+    try {
+      if (productId.isEmpty) {
+        final snapshot = await _db
+            .collectionGroup('reviews')
+            .where('status', isEqualTo: 'pending')
+            .get();
+        return snapshot.docs
+            .map((doc) => ReviewModel.fromFirestore(doc.data(), doc.id))
+            .toList();
+      } else {
+        final snapshot = await _db
+            .collection('products')
+            .doc(productId)
+            .collection('reviews')
+            .where('status', isEqualTo: 'pending')
+            .get();
+        return snapshot.docs
+            .map((doc) => ReviewModel.fromFirestore(doc.data(), doc.id))
+            .toList();
+      }
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   Future<void> moderateReview({
     required String productId,
     required String reviewId,
     required String status,
-  }) {
-    // TODO: Dev 1 implements khi Dev 5 cần (UC-40)
-    throw UnimplementedError('ProductService.moderateReview — chưa implement');
+  }) async {
+    try {
+      await _db
+          .collection('products')
+          .doc(productId)
+          .collection('reviews')
+          .doc(reviewId)
+          .update({'status': status});
+    } catch (e) {
+      throw DatabaseException.unknown(e);
+    }
   }
 
   Future<void> seedInitialData({
@@ -162,7 +262,10 @@ class ProductService {
       final categoriesSnap = await _db.collection('categories').limit(1).get();
       if (categoriesSnap.docs.isEmpty) {
         for (final cat in categories) {
-          await _db.collection('categories').doc(cat.id).set(CategoryModel.toFirestore(cat));
+          await _db
+              .collection('categories')
+              .doc(cat.id)
+              .set(CategoryModel.toFirestore(cat));
         }
       }
 
@@ -170,7 +273,10 @@ class ProductService {
       final productsSnap = await _db.collection('products').limit(1).get();
       if (productsSnap.docs.isEmpty) {
         for (final product in products) {
-          await _db.collection('products').doc(product.id).set(ProductModel.toFirestore(product));
+          await _db
+              .collection('products')
+              .doc(product.id)
+              .set(ProductModel.toFirestore(product));
         }
       }
     } catch (e) {

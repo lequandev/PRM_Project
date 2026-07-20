@@ -69,3 +69,9 @@ export 'src/utils/extensions/datetime_extensions.dart';
 export 'src/utils/extensions/num_extensions.dart';
 export 'src/utils/validators/form_validators.dart';
 export 'src/utils/helpers/logger.dart';
+
+// ════════════════════════════════════════════════
+// WIDGETS
+// ════════════════════════════════════════════════
+
+export 'src/widgets/animated_splash_screen.dart';
