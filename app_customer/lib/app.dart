@@ -40,7 +40,8 @@ class _AppState extends State<App> {
           // còn stub chạy fake (xem CoreProfileRepository).
           Provider<ProfileRepository>(
             create: (_) =>
-                CoreProfileRepository(UserService(), AuthService()),
+                CoreProfileRepository(
+                    UserService(), AuthService(), LoyaltyService()),
           ),
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           // Session thật từ user đăng nhập — order phải mang uid thật,
@@ -50,7 +51,8 @@ class _AppState extends State<App> {
           ),
           ProxyProvider<CurrentSession, OrderRepository>(
             update: (_, session, __) =>
-                CoreOrderRepository(OrderService(), ProductService(), session),
+                CoreOrderRepository(
+                    OrderService(), ProductService(), session, LoyaltyService()),
           ),
           Provider<CheckoutRepository>(
             create: (_) => CoreCheckoutRepository(

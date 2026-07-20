@@ -49,6 +49,7 @@ export 'src/services/product_service.dart';
 export 'src/services/user_service.dart';
 export 'src/services/order_service.dart';
 export 'src/services/voucher_service.dart';
+export 'src/services/loyalty_service.dart';     // UC-27, UC-28
 export 'src/services/storage_service.dart';
 
 // ════════════════════════════════════════════════

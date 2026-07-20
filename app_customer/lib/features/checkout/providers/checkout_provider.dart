@@ -201,11 +201,10 @@ class CheckoutProvider extends ChangeNotifier {
             : null,
         voucherCode: voucher?.code,
         paymentMethod: paymentMethod.name,
-        // Cổng online (VNPay/MoMo/ZaloPay) đang chạy chế độ Demo —
-        // giả lập đã thanh toán thành công. Tiền mặt thì chờ thu khi giao.
-        paymentStatus: paymentMethod == PaymentMethod.cash
-            ? PaymentStatus.pending.name
-            : PaymentStatus.paid.name,
+        // Luôn tạo đơn ở trạng thái CHỜ thanh toán:
+        // - tiền mặt: thu khi giao;
+        // - online (PayOS): webhook flip sang 'paid' sau khi khách trả tiền.
+        paymentStatus: PaymentStatus.pending.name,
         note: trimmedNote.isEmpty ? null : trimmedNote,
         loyaltyPointsEarned: estimatedPoints,
       );
