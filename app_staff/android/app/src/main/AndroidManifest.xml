@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- UC-24: camera để quét QR nhận hàng của khách -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:label="app_staff"
         android:name="${applicationName}"
