@@ -2,6 +2,7 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../../common/order_code.dart';
 import '../../../common/widgets/app_network_image.dart';
 
 /// Bottom sheet "thẻ nhận hàng" cho đơn pickup đã sẵn sàng (UC-19).
@@ -179,7 +180,7 @@ class _PassCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            order.id,
+            order.shortCode,
             textAlign: TextAlign.center,
             style: AppTypography.h1.copyWith(letterSpacing: 3),
           ),

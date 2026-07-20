@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/order_code.dart';
 import '../../../common/widgets/app_network_image.dart';
 import '../../../data/order_repository.dart';
 import '../providers/order_tracking_provider.dart';
@@ -134,7 +135,7 @@ class _HeaderCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  order.id,
+                  order.shortCode,
                   style: AppTypography.h3,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

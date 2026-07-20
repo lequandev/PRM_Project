@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/order_code.dart';
 import '../../../common/widgets/app_network_image.dart';
 import '../../../data/order_repository.dart';
 import '../../../data/session.dart';
@@ -156,7 +157,7 @@ class _OrderCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      order.id,
+                      order.shortCode,
                       style: AppTypography.h4,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
