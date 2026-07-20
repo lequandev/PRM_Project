@@ -268,7 +268,9 @@ class _AddressFormViewState extends State<_AddressFormView> {
               Text(_isEditing ? 'Đã cập nhật địa chỉ' : 'Đã thêm địa chỉ mới'),
         ),
       );
-      context.pop();
+      // pop(true): báo cho màn gọi (vd checkout) là đã lưu thành công để
+      // nó reload danh sách địa chỉ.
+      context.pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

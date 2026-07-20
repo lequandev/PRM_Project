@@ -32,7 +32,7 @@ class AddressSection extends StatelessWidget {
               ),
             )
           else if (provider.addresses.isEmpty)
-            _EmptyAddresses(onAdd: () => context.push('/profile/addresses'))
+            _EmptyAddresses(onAdd: () => _addAddressThenReload(context))
           else
             _SelectedAddressTile(
               address: address,
@@ -67,6 +67,17 @@ class AddressSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// UC-05 từ checkout: khách chưa có địa chỉ → đi THẲNG tới form (không vòng
+  /// qua màn danh sách), lưu xong quay lại checkout và reload để địa chỉ mới
+  /// hiện + tự chọn. Bug cũ: đẩy sang màn danh sách và không reload → kẹt.
+  Future<void> _addAddressThenReload(BuildContext context) async {
+    final checkout = context.read<CheckoutProvider>();
+    final added = await context.push<bool>('/profile/addresses/form');
+    if (added == true) {
+      await checkout.loadAddresses();
+    }
   }
 
   void _showAddressPicker(BuildContext context) {
@@ -229,9 +240,14 @@ class _AddressPickerSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: TextButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  context.push('/profile/addresses');
+                onPressed: () async {
+                  // Bắt provider + router TRƯỚC khi pop (context sheet sẽ hết
+                  // hiệu lực sau khi đóng).
+                  final checkout = context.read<CheckoutProvider>();
+                  final router = GoRouter.of(context);
+                  Navigator.of(context).pop(); // đóng sheet chọn địa chỉ
+                  await router.push('/profile/addresses');
+                  await checkout.loadAddresses(); // reload sau khi quản lý
                 },
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Quản lý địa chỉ'),
