@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/order_code.dart';
 import '../../../data/order_repository.dart';
 
 /// UC-17 — Màn ăn mừng sau khi đặt hàng thành công.
@@ -100,7 +101,7 @@ class _SuccessBody extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _InfoRow(label: 'Mã đơn hàng', value: order.id),
+                _InfoRow(label: 'Mã đơn hàng', value: order.shortCode),
                 const SizedBox(height: AppSpacing.sm),
                 _InfoRow(
                   label: 'Thời gian đặt',
