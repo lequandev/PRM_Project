@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 
 import 'checkout_repository.dart';
@@ -8,26 +10,59 @@ import 'session.dart';
 /// Bản THẬT của [OrderRepository] — bọc service Firebase trong core_module.
 /// UI không đổi một dòng: chỉ swap nơi khởi tạo trong app.dart.
 class CoreOrderRepository implements OrderRepository {
-  CoreOrderRepository(this._orders, this._products, this._session);
+  CoreOrderRepository(
+      this._orders, this._products, this._session, this._loyalty);
 
   final OrderService _orders;
   final ProductService _products;
   final CurrentSession _session;
+  final LoyaltyService _loyalty;
+
+  /// Đơn đã cộng điểm trong phiên này — tránh gọi transaction lặp mỗi lần
+  /// stream đẩy. Server còn 1 lớp idempotent nữa (doc earn_{orderId}).
+  final Set<String> _awardedOrderIds = {};
+
+  /// UC-27: cộng điểm khi khách xem đơn đã `delivered`. Không có Cloud Functions
+  /// nên đây là nơi kích hoạt cộng điểm. Fire-and-forget, lỗi không chặn UI.
+  void _maybeAward(OrderModel order) {
+    if (order.orderStatus != OrderStatus.delivered) return;
+    if (order.id.isEmpty || order.loyaltyPointsEarned <= 0) return;
+    if (!_awardedOrderIds.add(order.id)) return;
+    unawaited(
+      _loyalty.awardPointsForOrder(order.customerId, order).catchError(
+        (Object _) {
+          _awardedOrderIds.remove(order.id); // lỗi → cho phép thử lại
+        },
+      ),
+    );
+  }
 
   @override
   Future<OrderModel> createOrder(OrderModel order) =>
       _orders.createOrder(order);
 
   @override
-  Future<List<OrderModel>> getOrdersByCustomer(String customerId) =>
-      _orders.getOrdersByCustomer(customerId);
+  Future<List<OrderModel>> getOrdersByCustomer(String customerId) async {
+    final orders = await _orders.getOrdersByCustomer(customerId);
+    for (final o in orders) {
+      _maybeAward(o);
+    }
+    return orders;
+  }
 
   @override
-  Future<OrderModel> getOrderById(String orderId) =>
-      _orders.getOrderById(orderId);
+  Future<OrderModel> getOrderById(String orderId) async {
+    final order = await _orders.getOrderById(orderId);
+    _maybeAward(order);
+    return order;
+  }
 
   @override
-  Stream<OrderModel> watchOrder(String orderId) => _orders.watchOrder(orderId);
+  Stream<OrderModel> watchOrder(String orderId) =>
+      _orders.watchOrder(orderId).map((order) {
+        _maybeAward(order);
+        return order;
+      });
 
   @override
   Future<void> cancelOrder({required String orderId, required String reason}) =>
@@ -110,10 +145,11 @@ class CoreCheckoutRepository implements CheckoutRepository {
 /// TODO(core PR #2): khi UserService có addresses CRUD / updateProfile /
 /// deactivateAccount và loyalty có service thật → thay từng dòng _fallback.
 class CoreProfileRepository implements ProfileRepository {
-  CoreProfileRepository(this._users, this._auth);
+  CoreProfileRepository(this._users, this._auth, this._loyalty);
 
   final UserService _users;
   final AuthService _auth;
+  final LoyaltyService _loyalty;
 
   @override
   Future<ProfileData> getProfile(String uid) async {
@@ -132,10 +168,7 @@ class CoreProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<int> getLoyaltyPoints(String uid) async {
-    final user = await _users.getUserById(uid);
-    return user?.loyaltyPoints ?? 0;
-  }
+  Future<int> getLoyaltyPoints(String uid) => _loyalty.getPoints(uid);
 
   @override
   Future<void> sendPasswordResetEmail(String email) =>
@@ -174,20 +207,24 @@ class CoreProfileRepository implements ProfileRepository {
   Future<void> deactivateAccount(String uid) =>
       _users.deactivateAccount(uid);
 
-  // ─── Loyalty: core CHƯA có LoyaltyService (UC-27/28) ───
-  // Trả rỗng THẬT thay vì history giả: điểm thật (0) + lịch sử giả (1.250)
-  // trên cùng màn hình là mâu thuẫn lộ liễu. Fake history chỉ dùng ở demo mode.
-  // TODO(bàn với Dev 1): cần LoyaltyService (đọc /users/{uid}/loyaltyTransactions,
-  // redeem bằng Firestore transaction) + luồng CỘNG điểm khi đơn delivered
-  // (staff app? — rules hiện chưa cho staff update /users của customer).
+  // ─── Loyalty (UC-27/28) — LoyaltyService THẬT ───
+  // Điểm được CỘNG khi khách xem đơn đã delivered (xem CoreOrderRepository).
 
   @override
-  Future<List<LoyaltyTransactionModel>> getLoyaltyTransactions(String uid) async {
-    return const [];
-  }
+  Future<List<LoyaltyTransactionModel>> getLoyaltyTransactions(String uid) =>
+      _loyalty.getTransactions(uid);
 
+  /// UC-28: trừ điểm + trả mã voucher thưởng. Không tạo voucher mới (rules chỉ
+  /// admin được ghi /vouchers) → trả mã có sẵn GIAM15K để khách áp ở checkout.
   @override
-  Future<String> redeemPoints({required String uid, required int points}) {
-    throw Exception('Đổi điểm sẽ khả dụng khi core_module có LoyaltyService.');
+  Future<String> redeemPoints(
+      {required String uid, required int points}) async {
+    const rewardCode = 'GIAM15K';
+    await _loyalty.redeemPoints(
+      uid: uid,
+      points: points,
+      description: 'Đổi $points điểm lấy voucher $rewardCode',
+    );
+    return rewardCode;
   }
 }
