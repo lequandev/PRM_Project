@@ -102,6 +102,12 @@ class _OrderQueueScreenState extends State<OrderQueueScreen> with SingleTickerPr
                       const Icon(Icons.error_outline, size: 64, color: AppColors.error),
                       const SizedBox(height: AppSpacing.md),
                       Text(orderProvider.errorMessage!, style: AppTypography.h4),
+                      const SizedBox(height: AppSpacing.md),
+                      ElevatedButton.icon(
+                        onPressed: () => orderProvider.reload(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Thử lại'),
+                      ),
                     ],
                   ),
                 )
@@ -322,28 +328,26 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
 
               // Items Summary
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: order.items.length > 2 ? 2 : order.items.length,
-                  itemBuilder: (context, idx) {
-                    final item = order.items[idx];
-                    final customizationText = item.customizations.entries
-                        .map((e) => '${e.value}')
-                        .join(', ');
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: order.items.length > 2 ? 2 : order.items.length,
+                itemBuilder: (context, idx) {
+                  final item = order.items[idx];
+                  final customizationText = item.customizations.entries
+                      .map((e) => '${e.value}')
+                      .join(', ');
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 2.0),
-                      child: Text(
-                        '${item.quantity}x ${item.productName}${customizationText.isNotEmpty ? ' ($customizationText)' : ''}',
-                        style: AppTypography.bodyMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  },
-                ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 2.0),
+                    child: Text(
+                      '${item.quantity}x ${item.productName}${customizationText.isNotEmpty ? ' ($customizationText)' : ''}',
+                      style: AppTypography.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                },
               ),
               if (order.items.length > 2)
                 Text(

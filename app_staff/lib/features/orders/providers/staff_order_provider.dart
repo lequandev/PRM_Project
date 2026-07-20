@@ -28,6 +28,11 @@ class StaffOrderProvider extends ChangeNotifier {
     _startWatchingOrders();
   }
 
+  void reload() {
+    _subscription?.cancel();
+    _startWatchingOrders();
+  }
+
   void _startWatchingOrders() {
     _isLoading = true;
     _errorMessage = null;

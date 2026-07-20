@@ -139,7 +139,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       child: Text(provider.errorMessage!,
                           style: const TextStyle(color: AppColors.error)),
                     ),
-                    const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.close,
                           color: AppColors.error, size: 18),

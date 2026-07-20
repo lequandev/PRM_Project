@@ -543,12 +543,13 @@ class _AddressFormViewState extends State<_AddressFormView> {
               ),
             ],
             const SizedBox(height: AppSpacing.md),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+            Material(
+              color: AppColors.cardBackground,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.card),
-                border: Border.all(color: AppColors.borderLight),
+                side: const BorderSide(color: AppColors.borderLight),
               ),
+              clipBehavior: Clip.antiAlias,
               child: SwitchListTile(
                 value: _isDefault,
                 activeThumbColor: AppColors.goldPrimary,

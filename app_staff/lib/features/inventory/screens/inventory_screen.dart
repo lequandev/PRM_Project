@@ -127,6 +127,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       const Icon(Icons.error_outline, size: 64, color: AppColors.error),
                       const SizedBox(height: AppSpacing.md),
                       Text(inventoryProvider.errorMessage!, style: AppTypography.h4),
+                      const SizedBox(height: AppSpacing.md),
+                      ElevatedButton.icon(
+                        onPressed: () => inventoryProvider.reload(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Thử lại'),
+                      ),
                     ],
                   ),
                 )

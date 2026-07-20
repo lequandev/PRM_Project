@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 
 /// AnalyticsProvider — Doanh thu (UC-37) + Sản phẩm bán chạy (UC-38).
@@ -108,6 +109,12 @@ class AnalyticsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (FirebaseAuth.instance.currentUser == null) {
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
       final startTs = Timestamp.fromDate(
           DateTime(_from.year, _from.month, _from.day));
       final endTs = Timestamp.fromDate(

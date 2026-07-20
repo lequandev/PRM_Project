@@ -14,6 +14,22 @@ abstract class AppColors {
   /// Đã hạ bão hòa để giảm mỏi mắt, tăng tính chuyên nghiệp học thuật.
   static const Color goldPrimary = Color(0xFFA67C1E);
 
+  /// Đỏ Burgundy Cà Phê (Deep Coffee Cherry Red) — #721C24
+  /// Màu nhận diện thương hiệu cao cấp
+  static const Color brandCherryRed = Color(0xFF721C24);
+
+  /// Sữa Cà Phê Nhẹ (Light Coffee Milk / Warm Cream) — #F3E9DC
+  /// Màu nền signature cho premium splash screen
+  static const Color coffeeMilkPrimary = Color(0xFFF3E9DC);
+
+  /// Chữ Nâu Cà Phê Đậm (Deep Roasted Coffee Bean Brown) — #2B1A12
+  /// Độ tương phản cao trên nền sữa cà phê
+  static const Color roastedBrownText = Color(0xFF2B1A12);
+
+  /// Vàng Caramel (Rich Caramel Gold) — #D4AF37
+  /// Màu accent sang trọng cho progress bar và button
+  static const Color caramelGold = Color(0xFFD4AF37);
+
   /// Vàng Giấy Cũ (Scholarly Gold Parchment) — #DEC58A
   /// Hài hòa làm màu sáng cho gradient và highlight.
   static const Color goldLight = Color(0xFFDEC58A);
