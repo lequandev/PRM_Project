@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:intl/intl.dart';
 
+import '../../../common/widgets/app_network_image.dart';
+
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onTap;
@@ -39,19 +41,11 @@ class ProductCard extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                    ? Image.network(
-                        product.imageUrl!,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(color: AppColors.borderLight, child: const Icon(Icons.coffee, color: AppColors.textHint)),
-                      )
-                    : Container(
-                        width: double.infinity,
-                        color: AppColors.borderLight,
-                        child: const Icon(Icons.coffee, color: AppColors.textHint, size: 40),
-                      ),
+                child: AppNetworkImage(
+                  product.imageUrl,
+                  width: double.infinity,
+                  iconSize: 40,
+                ),
               ),
             ),
             // Thông tin

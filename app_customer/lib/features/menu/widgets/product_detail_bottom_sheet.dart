@@ -3,6 +3,7 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../../../common/widgets/app_network_image.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/menu_provider.dart';
 
@@ -180,17 +181,14 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                 height: 360,
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  child: widget.product.imageUrl != null && widget.product.imageUrl!.isNotEmpty
-                      ? Image.network(
-                          widget.product.imageUrl!,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          width: double.infinity,
-                          color: AppColors.beigeWarm,
-                          child: const Icon(Icons.local_cafe_rounded, size: 100, color: AppColors.goldLight),
-                        ),
+                  child: AppNetworkImage(
+                    widget.product.imageUrl,
+                    width: double.infinity,
+                    background: AppColors.beigeWarm,
+                    icon: Icons.local_cafe_rounded,
+                    iconColor: AppColors.goldLight,
+                    iconSize: 100,
+                  ),
                 ),
               ),
 

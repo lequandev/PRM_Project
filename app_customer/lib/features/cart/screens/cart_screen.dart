@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:intl/intl.dart';
 
+import '../../../common/widgets/app_network_image.dart';
 import '../providers/cart_provider.dart';
 
 class CartScreen extends StatelessWidget {
@@ -88,25 +89,14 @@ class CartScreen extends StatelessWidget {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: item.productImageUrl != null && item.productImageUrl!.isNotEmpty
-                                ? Image.network(
-                                    item.productImageUrl!,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: AppColors.beigeWarm,
-                                      child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
-                                    ),
-                                  )
-                                : Container(
-                                    width: 80,
-                                    height: 80,
-                                    color: AppColors.beigeWarm,
-                                    child: const Icon(Icons.coffee, color: AppColors.goldPrimary, size: 36),
-                                  ),
+                            child: AppNetworkImage(
+                              item.productImageUrl,
+                              width: 80,
+                              height: 80,
+                              background: AppColors.beigeWarm,
+                              iconColor: AppColors.goldPrimary,
+                              iconSize: 36,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
