@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -18,11 +20,37 @@ class AuthProvider extends ChangeNotifier {
   UserModel? get currentUser => _currentUser;
 
   AuthProvider() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedUserData = prefs.getString('cached_user');
+    
+    if (cachedUserData != null) {
+      try {
+        _currentUser = UserModel.fromJson(json.decode(cachedUserData));
+        _isInitializing = false;
+        notifyListeners();
+      } catch (e) {
+        debugPrint('Failed to load cached user: $e');
+      }
+    }
+
     _authService.authStateChanges.listen((User? user) async {
       if (user == null) {
         _currentUser = null;
+        await prefs.remove('cached_user');
       } else {
-        _currentUser = await _authService.getCurrentUserModel();
+        try {
+          final realUser = await _authService.getCurrentUserModel();
+          if (realUser != null) {
+            _currentUser = realUser;
+            await prefs.setString('cached_user', json.encode(realUser.toJson()));
+          }
+        } catch (e) {
+          debugPrint('Failed to fetch real user from Firestore: $e');
+        }
       }
       _isInitializing = false;
       notifyListeners();

@@ -16,7 +16,18 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  bool _isTeacherMode = false;
+  bool _isDarkMode = false;
+  
+  // Premium AgentAI Dark Mode Palette
+  Color get _bgColor => _isDarkMode ? const Color(0xFF0F111A) : AppColors.backgroundLight;
+  Color get _cardColor => _isDarkMode ? const Color(0xFF1C1F2E) : AppColors.cardBackground;
+  Color get _textColor => _isDarkMode ? const Color(0xFFF8FAFC) : AppColors.textPrimary;
+  Color get _subTextColor => _isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+  Color get _borderColor => _isDarkMode ? const Color(0xFF2E3348) : AppColors.borderLight;
+  Color get _appBarColor => _isDarkMode ? const Color(0xFF0F111A) : AppColors.white;
+  Color get _iconColor => _isDarkMode ? const Color(0xFFCBD5E1) : AppColors.textSecondary;
+  Color get _goldAccent => _isDarkMode ? const Color(0xFFFBBF24) : AppColors.goldPrimary; // Brighter gold for dark mode
+  Color get _glowColor => _isDarkMode ? const Color(0xFFFBBF24).withOpacity(0.15) : AppColors.textPrimary.withOpacity(0.03);
   bool _isListView = false;
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
@@ -30,13 +41,11 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: _bgColor,
       appBar: _buildTopBar(),
       body: Consumer<MenuProvider>(
         builder: (context, menuProvider, child) {
-          if (_isTeacherMode) {
-            return const TeacherSpecialPanel();
-          }
+
 
           return Stack(
             children: [
@@ -97,7 +106,7 @@ class _MenuScreenState extends State<MenuScreen> {
   // A. Custom Top App Bar
   PreferredSizeWidget _buildTopBar() {
     return AppBar(
-      backgroundColor: AppColors.white,
+      backgroundColor: _appBarColor,
       elevation: 0.5,
       leadingWidth: _isSearching ? 0 : 150,
       leading: _isSearching
@@ -106,24 +115,25 @@ class _MenuScreenState extends State<MenuScreen> {
               margin: const EdgeInsets.only(left: 16, top: 10, bottom: 10),
               padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
-                color: AppColors.backgroundLight,
+                color: _isDarkMode ? const Color(0xFF1C1F2E) : _bgColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderLight),
+                border: Border.all(color: _borderColor),
+                boxShadow: _isDarkMode ? [BoxShadow(color: _glowColor, blurRadius: 8, spreadRadius: -2)] : [],
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.apps, size: 16, color: AppColors.brownAccent),
-                  SizedBox(width: 6),
+                  Icon(Icons.apps, size: 16, color: _isDarkMode ? _goldAccent : AppColors.brownAccent),
+                  const SizedBox(width: 6),
                   Text(
                     'Danh mục',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: _textColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(width: 4),
-                  Icon(Icons.arrow_drop_down, size: 16, color: AppColors.textSecondary),
+                  Icon(Icons.arrow_drop_down, size: 16, color: _subTextColor),
                 ],
               ),
             ),
@@ -134,10 +144,10 @@ class _MenuScreenState extends State<MenuScreen> {
               decoration: InputDecoration(
                 hintText: 'Tìm kiếm món...',
                 border: InputBorder.none,
-                hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                hintStyle: TextStyle(color: _subTextColor, fontSize: 14),
                 prefixIcon: const Icon(Icons.search, color: AppColors.goldPrimary, size: 20),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 18),
+                  icon: Icon(Icons.close, color: _subTextColor, size: 18),
                   onPressed: () {
                     _searchController.clear();
                     Provider.of<MenuProvider>(context, listen: false).setSearchQuery('');
@@ -159,21 +169,24 @@ class _MenuScreenState extends State<MenuScreen> {
                     Provider.of<MenuProvider>(context, listen: false).setSearchQuery('');
                   });
                 },
-                child: const Text('Hủy', style: TextStyle(color: AppColors.brownAccent)),
+                child: Text('Hủy', style: TextStyle(color: AppColors.brownAccent)),
               ),
               const SizedBox(width: 8),
             ]
           : [
-              // Chế độ giáo viên
+              // Dark mode toggle (Premium UI)
               Row(
                 children: [
-                  const Icon(Icons.school, size: 18, color: AppColors.goldPrimary),
+                  Icon(_isDarkMode ? Icons.dark_mode : Icons.light_mode, size: 18, color: _goldAccent),
                   Switch(
-                    value: _isTeacherMode,
-                    activeColor: AppColors.goldPrimary,
+                    value: _isDarkMode,
+                    activeColor: _goldAccent,
+                    activeTrackColor: _goldAccent.withOpacity(0.3),
+                    inactiveThumbColor: AppColors.textSecondary,
+                    inactiveTrackColor: AppColors.borderLight,
                     onChanged: (val) {
                       setState(() {
-                        _isTeacherMode = val;
+                        _isDarkMode = val;
                       });
                     },
                   ),
@@ -182,7 +195,7 @@ class _MenuScreenState extends State<MenuScreen> {
               IconButton(
                 icon: Icon(
                   _isListView ? Icons.grid_view : Icons.view_list,
-                  color: AppColors.textSecondary,
+                  color: _subTextColor,
                   size: 20,
                 ),
                 onPressed: () {
@@ -192,7 +205,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+                icon: Icon(Icons.search, color: _subTextColor, size: 20),
                 onPressed: () {
                   setState(() {
                     _isSearching = true;
@@ -200,7 +213,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.favorite_border, color: AppColors.textSecondary, size: 20),
+                icon: Icon(Icons.favorite_border, color: _subTextColor, size: 20),
                 onPressed: () {},
               ),
               const SizedBox(width: 8),
@@ -224,13 +237,14 @@ class _MenuScreenState extends State<MenuScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: _cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.goldPrimary.withOpacity(0.2), width: 1),
+        border: Border.all(color: _isDarkMode ? _borderColor : AppColors.goldPrimary.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withOpacity(0.03),
-            blurRadius: 10,
+            color: _glowColor,
+            blurRadius: _isDarkMode ? 12 : 10,
+            spreadRadius: _isDarkMode ? 1 : 0,
             offset: const Offset(0, 4),
           ),
         ],
@@ -261,16 +275,17 @@ class _MenuScreenState extends State<MenuScreen> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.goldPrimary : AppColors.backgroundLight,
+                        color: isSelected ? _goldAccent : (_isDarkMode ? const Color(0xFF2E3348) : AppColors.backgroundLight),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isSelected ? AppColors.goldLight : AppColors.borderLight,
+                          color: isSelected ? (_isDarkMode ? _goldAccent : AppColors.goldLight) : _borderColor,
                           width: 1,
                         ),
+                        boxShadow: isSelected && _isDarkMode ? [BoxShadow(color: _glowColor, blurRadius: 8, spreadRadius: 1)] : [],
                       ),
                       child: Icon(
                         cat['icon'] as IconData,
-                        color: isSelected ? Colors.white : AppColors.brownAccent,
+                        color: isSelected ? (_isDarkMode ? const Color(0xFF0F111A) : Colors.white) : (_isDarkMode ? _iconColor : AppColors.brownAccent),
                         size: 18,
                       ),
                     ),
@@ -280,7 +295,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: isSelected ? AppColors.goldPrimary : AppColors.textPrimary,
+                        color: isSelected ? _goldAccent : _textColor,
                         fontSize: 11,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -372,7 +387,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     color: AppColors.goldPrimary.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
+                  child: Text(
                     '🌟 MỤC YÊU THÍCH',
                     style: TextStyle(
                       color: AppColors.goldLight,
@@ -385,7 +400,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 const SizedBox(height: 12),
                 Text(
                   categoryName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
@@ -433,9 +448,9 @@ class _MenuScreenState extends State<MenuScreen> {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: _cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderLight),
+          border: Border.all(color: _borderColor),
         ),
         child: Row(
           children: [
@@ -462,8 +477,8 @@ class _MenuScreenState extends State<MenuScreen> {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: _textColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -471,8 +486,8 @@ class _MenuScreenState extends State<MenuScreen> {
                   const SizedBox(height: 4),
                   Text(
                     '${product.basePrice.toInt().toString().replaceAllMapped(RegExp(r'(\d{3})+(?!\d)'), (Match m) => '${m[0]}.')}đ',
-                    style: const TextStyle(
-                      color: AppColors.brownAccent,
+                    style: TextStyle(
+                      color: _isDarkMode ? _goldAccent : AppColors.brownAccent,
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
@@ -491,11 +506,12 @@ class _MenuScreenState extends State<MenuScreen> {
               child: Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(
-                  color: AppColors.goldPrimary,
+                decoration: BoxDecoration(
+                  color: _goldAccent,
                   shape: BoxShape.circle,
+                  boxShadow: _isDarkMode ? [BoxShadow(color: _glowColor, blurRadius: 6)] : [],
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 18),
+                child: Icon(Icons.add, color: _isDarkMode ? const Color(0xFF0F111A) : Colors.white, size: 18),
               ),
             ),
           ],
@@ -508,9 +524,9 @@ class _MenuScreenState extends State<MenuScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: _cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderLight),
+          border: Border.all(color: _borderColor),
         ),
         child: Stack(
           children: [
@@ -542,8 +558,8 @@ class _MenuScreenState extends State<MenuScreen> {
                       product.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: _textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -551,8 +567,8 @@ class _MenuScreenState extends State<MenuScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '${product.basePrice.toInt().toString().replaceAllMapped(RegExp(r'(\d{3})+(?!\d)'), (Match m) => '${m[0]}.')}đ',
-                      style: const TextStyle(
-                        color: AppColors.brownAccent,
+                      style: TextStyle(
+                        color: _isDarkMode ? _goldAccent : AppColors.brownAccent,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -576,7 +592,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
                 child: Text(
                   discountText.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 8,
                     fontWeight: FontWeight.bold,
@@ -600,11 +616,12 @@ class _MenuScreenState extends State<MenuScreen> {
               child: Container(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(
-                  color: AppColors.goldPrimary,
+                decoration: BoxDecoration(
+                  color: _goldAccent,
                   shape: BoxShape.circle,
+                  boxShadow: _isDarkMode ? [BoxShadow(color: _glowColor, blurRadius: 6)] : [],
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 16),
+                child: Icon(Icons.add, color: _isDarkMode ? const Color(0xFF0F111A) : Colors.white, size: 16),
               ),
             ),
           ),
@@ -699,7 +716,7 @@ class _FloatingCartPopupState extends State<_FloatingCartPopup> {
                   const SizedBox(width: 8),
                   Text(
                     '${cartProvider.items.fold(0, (sum, item) => sum + item.quantity)} món trong giỏ',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -717,7 +734,7 @@ class _FloatingCartPopupState extends State<_FloatingCartPopup> {
                   children: [
                     Text(
                       '${cartProvider.totalAmount.toInt().toString().replaceAllMapped(RegExp(r'(\d{3})+(?!\d)'), (Match m) => '${m[0]}.')}đ',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
