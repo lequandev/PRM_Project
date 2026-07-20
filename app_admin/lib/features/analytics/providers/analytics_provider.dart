@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
@@ -6,6 +8,7 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 /// AnalyticsProvider — Doanh thu (UC-37) + Sản phẩm bán chạy (UC-38).
 class AnalyticsProvider extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  StreamSubscription<User?>? _authSub;
 
   List<OrderModel> _orders = [];
   bool _isLoading = false;
@@ -90,7 +93,14 @@ class AnalyticsProvider extends ChangeNotifier {
   // ─── Load ─────────────────────────────────────────────────────────────────
 
   AnalyticsProvider() {
-    loadOrders();
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        loadOrders();
+      } else {
+        _orders = [];
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> loadOrders() async {
@@ -160,6 +170,12 @@ class AnalyticsProvider extends ChangeNotifier {
         break;
     }
     loadOrders();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }
 

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffee_shop_core/coffee_shop_core.dart';
@@ -6,6 +8,7 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 /// VoucherProvider — CRUD voucher cho Admin (UC-29).
 class VoucherProvider extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  StreamSubscription<User?>? _authSub;
 
   List<VoucherModel> _vouchers = [];
   bool _isLoading = false;
@@ -19,7 +22,14 @@ class VoucherProvider extends ChangeNotifier {
       _vouchers.where((v) => v.isActive && v.expiresAt.isAfter(DateTime.now())).toList();
 
   VoucherProvider() {
-    loadVouchers();
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        loadVouchers();
+      } else {
+        _vouchers = [];
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> loadVouchers() async {
@@ -150,5 +160,11 @@ class VoucherProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }
