@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_network_image.dart';
 import '../../../data/order_repository.dart';
 import '../../../data/session.dart';
 import '../providers/order_history_provider.dart';
@@ -170,6 +171,36 @@ class _OrderCard extends StatelessWidget {
                 order.createdAt.toVnDateTimeOrDash,
                 style: AppTypography.caption.copyWith(
                   color: AppColors.textHint,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
+              // Thumbnail các món (tối đa 4, dư thì +N)
+              SizedBox(
+                height: 44,
+                child: Row(
+                  children: [
+                    for (final item in order.items.take(4)) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        child: AppNetworkImage(
+                          item.productImageUrl,
+                          width: 44,
+                          height: 44,
+                          background: AppColors.beigeWarm,
+                          iconColor: AppColors.brownAccent,
+                          iconSize: 20,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                    ],
+                    if (order.items.length > 4)
+                      Text(
+                        '+${order.items.length - 4}',
+                        style: AppTypography.caption
+                            .copyWith(color: AppColors.textHint),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),

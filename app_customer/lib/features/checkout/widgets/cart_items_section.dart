@@ -2,6 +2,7 @@ import 'package:coffee_shop_core/coffee_shop_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_network_image.dart';
 import '../providers/checkout_provider.dart';
 import 'section_card.dart';
 
@@ -39,16 +40,17 @@ class _CartItemRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Ảnh placeholder — menu thật của Dev 2 sẽ có ảnh sản phẩm.
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.beigeWarm,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+        // Thumbnail sản phẩm (fallback icon cà phê nếu chưa có ảnh).
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: AppNetworkImage(
+            item.productImageUrl,
+            width: 48,
+            height: 48,
+            background: AppColors.beigeWarm,
+            icon: Icons.local_cafe_outlined,
+            iconColor: AppColors.brownAccent,
           ),
-          child: const Icon(Icons.local_cafe_outlined,
-              color: AppColors.brownAccent),
         ),
         const SizedBox(width: AppSpacing.sm + AppSpacing.xs),
         Expanded(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_network_image.dart';
 import '../../../data/order_repository.dart';
 import '../providers/order_tracking_provider.dart';
 import '../widgets/pickup_hero_card.dart';
@@ -579,6 +580,18 @@ class _DetailCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  child: AppNetworkImage(
+                    item.productImageUrl,
+                    width: 44,
+                    height: 44,
+                    background: AppColors.beigeWarm,
+                    iconColor: AppColors.brownAccent,
+                    iconSize: 20,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
                 SizedBox(
                   width: 32,
                   child: Text(
